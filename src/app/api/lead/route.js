@@ -26,8 +26,16 @@ const MAX_FIELD = 5000;
 
 // ── In-memory rate limit. Per instance, which is the right scope for a
 // serverless deployment: it caps a single abusive client without needing a store.
+//
+// The limit is deliberately generous. Several people submitting from one office
+// wifi, or from behind a single NAT at an open house, share an IP — and on a
+// lead-capture site, blocking a real lead is a far worse outcome than accepting
+// a few junk ones, which the honeypot and the timing check catch anyway.
+// Tunable, because the right number depends on the client's traffic shape.
+const RATE_LIMIT = Number(process.env.LEAD_RATE_LIMIT || 20);
+
 const hits = new Map();
-function rateLimited(ip, limit = 8, windowMs = 60_000) {
+function rateLimited(ip, limit = RATE_LIMIT, windowMs = 60_000) {
   const now = Date.now();
   const rec = hits.get(ip) || { n: 0, reset: now + windowMs };
   if (now > rec.reset) { rec.n = 0; rec.reset = now + windowMs; }

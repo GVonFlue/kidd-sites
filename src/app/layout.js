@@ -14,6 +14,15 @@ export const metadata = { title: 'Kidd Sites', robots: { index: false, follow: f
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        {/* Marks the document as JavaScript-capable BEFORE first paint. Scroll
+            reveals hide themselves only inside this scope, so with JS disabled
+            nothing can be left stuck at opacity 0. Inline and synchronous on
+            purpose: deferring it would cause a flash of hidden content. */}
+        <script
+          dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

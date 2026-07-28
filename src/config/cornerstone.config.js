@@ -7,6 +7,7 @@ export const brand = {
   name: 'Cornerstone Management',
   legalName: 'Cornerstone Management LLC',
   personName: 'Justus Kidd',
+  shortName: 'Cornerstone',           // used in the nav pill, where space is tight
   tagline: null,                     // written in Phase 2
   domain: 'cornerstonemgmt.co',
 

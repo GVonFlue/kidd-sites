@@ -28,6 +28,7 @@ module.exports = {
         '3xl': ['48px', '1.05'], '4xl': ['64px', '1.0'],
       },
       maxWidth: { prose: '68ch' },
+      borderRadius: { pill: '999px', frame: '28px' },
     },
   },
   plugins: [],

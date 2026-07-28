@@ -12,7 +12,7 @@ export const nav = [
 ];
 
 // Persistent nav CTA. cs_primary_action = request an HOA review.
-export const headerCta = { href: '/hoa', label: 'Request an HOA review' };
+export const headerCta = { href: '/hoa', label: 'HOA review' };
 
 export const routes = {
   '/': {

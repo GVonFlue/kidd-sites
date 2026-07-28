@@ -2,23 +2,38 @@
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * The live conversational surface. Build Standard §9.
- * Embedded in the page body, not a floating corner bubble.
+ * The live conversation. Build Standard §9.
+ *
+ * Opens on a short scripted sample so the panel demonstrates rather than just
+ * invites. The sample is labelled "Sample" on every line and is cleared the
+ * instant a real message is sent, so it can never be mistaken for a real
+ * customer exchange.
  *
  * Full history is sent on every request because the API is stateless.
- * The opening message and the chips are server-rendered by BotPanel, so the bot
- * is visible and readable before this component hydrates and with JS disabled.
  */
-export default function BotClient({ brand, botName, chips, greeting, tone, actions = {} }) {
+export default function BotClient({ brand, botName, chips, greeting, demo = [], tone, actions = {} }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
+  const [demoStep, setDemoStep] = useState(0);
   const sessionId = useRef(null);
   const logRef = useRef(null);
 
   useEffect(() => {
     sessionId.current = `s-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   }, []);
+
+  // Reveal the sample one line at a time, so the panel reads as a conversation
+  // happening rather than a block of text. Under reduced motion the whole
+  // sample appears at once instead.
+  useEffect(() => {
+    if (!demo.length || messages.length) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setDemoStep(demo.length); return; }
+    if (demoStep >= demo.length) return;
+    const gap = demoStep === 0 ? 700 : demo[demoStep].from === 'bot' ? 1100 : 800;
+    const t = setTimeout(() => setDemoStep((n) => n + 1), gap);
+    return () => clearTimeout(t);
+  }, [demoStep, demo, messages.length]);
 
   useEffect(() => {
     if (logRef.current && messages.length) logRef.current.scrollTop = logRef.current.scrollHeight;
@@ -47,49 +62,75 @@ export default function BotClient({ brand, botName, chips, greeting, tone, actio
   }
 
   const deep = tone === 'deep';
+  const started = messages.length > 0;
 
   function onChip(chip) {
     if (chip.action && actions[chip.action]) { window.location.href = actions[chip.action]; return; }
     send(chip.label);
   }
 
+  const bubbleThem = deep ? 'bg-white/10 text-white' : 'border border-line bg-surface text-ink';
+  const bubbleBot = deep ? 'bg-accent/20 text-white' : 'bg-accent/15 text-ink';
+
   return (
-    <div className="px-5 py-6">
-      <div
-        ref={logRef}
-        aria-live="polite"
-        aria-atomic="false"
-        className={messages.length ? 'max-h-[340px] overflow-y-auto' : ''}
-      >
-        <p className="max-w-prose leading-relaxed">{greeting}</p>
-        {messages.map((m, i) => (
-          <p
-            key={i}
-            className={`mt-4 max-w-prose leading-relaxed ${
-              m.role === 'user'
-                ? `rounded-lg px-4 py-3 ${deep ? 'bg-white/10' : 'bg-surface'}`
-                : ''
-            }`}
-          >
-            {m.role === 'user' ? <span className="sr-only">You said: </span> : <span className="sr-only">{botName} said: </span>}
-            {m.content}
-          </p>
+    <div className="px-5 py-5">
+      <div ref={logRef} aria-live="polite" className={started ? 'max-h-[360px] space-y-3 overflow-y-auto' : 'space-y-3'}>
+        <p className={`max-w-prose leading-relaxed ${deep ? 'text-white/90' : 'text-ink/90'}`}>{greeting}</p>
+
+        {!started && demo.slice(0, demoStep).map((m, i) => (
+          <div key={i} className={m.from === 'bot' ? '' : 'flex justify-end'}>
+            <div className={`max-w-[88%] rounded-2xl px-4 py-3 ${m.from === 'bot' ? bubbleBot : bubbleThem}`}>
+              <span className={`mb-1 block font-mono text-[10px] uppercase tracking-[0.09em] ${deep ? 'text-white/70' : 'text-ink/70'}`}>
+                {m.from === 'bot' ? botName : 'Sample'}
+              </span>
+              <span className="block text-[15px] leading-relaxed">{m.text}</span>
+              {m.meta ? (
+                <span className={`mt-1.5 block font-mono text-[10px] uppercase tracking-[0.09em] ${deep ? 'text-accent-lift' : 'text-accent-ink'}`}>
+                  &#10003; {m.meta}
+                </span>
+              ) : null}
+            </div>
+          </div>
         ))}
-        {busy ? <p className="mt-4 text-sm text-ink/75">{botName} is typing</p> : null}
+
+        {!started && demoStep < demo.length ? (
+          <div className="flex gap-1 px-1 pt-1" aria-hidden="true">
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                className="h-1.5 w-1.5 rounded-full bg-accent opacity-60 motion-safe:animate-bounce"
+                style={{ animationDelay: `${i * 140}ms` }}
+              />
+            ))}
+          </div>
+        ) : null}
+
+        {messages.map((m, i) => (
+          <div key={i} className={m.role === 'assistant' ? '' : 'flex justify-end'}>
+            <div className={`max-w-[88%] rounded-2xl px-4 py-3 ${m.role === 'assistant' ? bubbleBot : bubbleThem}`}>
+              <span className={`mb-1 block font-mono text-[10px] uppercase tracking-[0.09em] ${deep ? 'text-white/70' : 'text-ink/70'}`}>
+                {m.role === 'assistant' ? botName : 'You'}
+              </span>
+              <span className="block text-[15px] leading-relaxed">{m.content}</span>
+            </div>
+          </div>
+        ))}
+
+        {busy ? <p className={`px-1 text-sm ${deep ? 'text-white/75' : 'text-ink/75'}`}>{botName} is typing</p> : null}
       </div>
 
-      {messages.length === 0 ? (
+      {!started ? (
         <ul className="mt-5 flex flex-wrap gap-2">
           {chips.map((chip) => (
             <li key={chip.label}>
               <button
                 type="button"
                 onClick={() => onChip(chip)}
-                className={`min-h-[44px] rounded-full border px-4 text-sm transition-colors ${
+                className={`min-h-[44px] rounded-pill border px-4 text-sm transition-colors ${
                   chip.kind === 'conversion'
-                    ? 'border-accent bg-accent font-semibold text-ink'
+                    ? 'border-accent bg-accent font-semibold text-ink hover:bg-accent-lift'
                     : deep
-                      ? 'border-white/25 hover:bg-white/10'
+                      ? 'border-white/25 text-white hover:bg-white/10'
                       : 'border-line bg-surface hover:bg-wash'
                 }`}
               >
@@ -102,7 +143,9 @@ export default function BotClient({ brand, botName, chips, greeting, tone, actio
 
       <form
         onSubmit={(e) => { e.preventDefault(); send(input); }}
-        className={`mt-6 flex items-center gap-2 rounded-md border px-3 ${deep ? 'border-white/20' : 'border-line bg-surface'}`}
+        className={`mt-5 flex items-center gap-2 rounded-pill border py-1 pl-4 pr-1 ${
+          deep ? 'border-white/20 bg-white/5' : 'border-line bg-surface'
+        }`}
       >
         <label htmlFor="bot-input" className="sr-only">Ask {botName} a question</label>
         <input
@@ -118,7 +161,7 @@ export default function BotClient({ brand, botName, chips, greeting, tone, actio
           type="submit"
           disabled={busy}
           aria-label="Send"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded bg-accent font-mono text-ink disabled:opacity-50"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent font-mono text-ink transition-colors hover:bg-accent-lift disabled:opacity-50"
         >
           <span aria-hidden="true">&rarr;</span>
         </button>

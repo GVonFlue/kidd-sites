@@ -1,4 +1,5 @@
 import { H2 } from './Section';
+import Reveal from './Reveal';
 const TOKEN = /^\[NEEDS VERIFICATION/;
 
 export default function Prose({ heading, body, tone = 'light' }) {
@@ -6,13 +7,13 @@ export default function Prose({ heading, body, tone = 'light' }) {
   if (!paras.length) return null;
   const deep = tone === 'deep';
   return (
-    <div className="max-w-prose">
+    <Reveal className="max-w-prose">
       {heading ? <H2>{heading}</H2> : null}
       {paras.map((p) => (
         <p key={p.slice(0, 40)} className={`mt-5 leading-relaxed ${deep ? 'text-white/80' : 'text-ink/80'}`}>
           {p}
         </p>
       ))}
-    </div>
+    </Reveal>
   );
 }

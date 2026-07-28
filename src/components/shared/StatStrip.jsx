@@ -1,4 +1,5 @@
 import { Eyebrow } from './Section';
+import Reveal from './Reveal';
 
 /**
  * Authority through specificity. Real numbers, set in tabular mono figures so
@@ -8,7 +9,7 @@ import { Eyebrow } from './Section';
 export default function StatStrip({ heading, stats = [], credentials = [], tone = 'ink' }) {
   if (!stats.length) return null;
   return (
-    <div>
+    <Reveal>
       <Eyebrow tone={tone === 'deep' ? 'deep' : 'ink'}>{heading}</Eyebrow>
       <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-4">
         {stats.map((s) => (
@@ -32,6 +33,6 @@ export default function StatStrip({ heading, stats = [], credentials = [], tone 
           ))}
         </ul>
       ) : null}
-    </div>
+    </Reveal>
   );
 }

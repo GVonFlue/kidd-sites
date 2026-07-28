@@ -9,6 +9,7 @@ export const brand = {
   name: 'Agent Kidd',
   legalName: 'Real Broker, LLC',
   personName: 'Justus Kidd',
+  shortName: 'Agent Kidd',           // used in the nav pill, where space is tight
   tagline: null,                     // written in Phase 2
   domain: 'agentkidd.com',
 

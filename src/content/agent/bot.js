@@ -22,6 +22,26 @@ export const bot = {
     { label: 'Book a call with Justus', kind: 'conversion', action: 'booking' },
   ],
 
+  section: {
+    eyebrow: 'Ask before you commit',
+    heading: 'Meet Mason.',
+    body:
+      'Most people have three questions before they are ready to talk to an agent, and most agents make you book a call to ask them. Ask Mason instead. No form, no pressure, and he will say when he does not know.',
+    chips: [
+      'Answers in seconds',
+      'No form, no commitment',
+      'Puts you through to Justus',
+    ],
+    statusLabel: 'Agent Kidd front desk',
+  },
+
+  demo: [
+    { from: 'them', text: 'How much does it cost me to sell?' },
+    { from: 'bot', text: 'Justus sets that with you rather than off a rate card, so I will not guess a number at you. What I can do is send the free valuation, which shows the price range and what it would net you.' },
+    { from: 'them', text: 'What if it is a bad time to sell?' },
+    { from: 'bot', text: 'Then the valuation will say so. He would rather tell you to wait than list something that sits.', meta: 'honest by design' },
+  ],
+
   /**
    * System prompt. Built from the brand config and the content files so the bot
    * cannot contradict the site.

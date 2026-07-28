@@ -109,6 +109,19 @@ for (const [brand, cfg] of Object.entries(ROUTES)) {
   const page = await ctx.newPage();
   for (const p of cfg.paths) {
     await page.goto(`http://${cfg.host}:3000${p}`, { waitUntil: 'networkidle' });
+    // Scroll the whole page so every scroll-reveal has fired. Measuring a
+    // mid-animation opacity would report contrast a visitor never experiences.
+    await page.evaluate(async () => {
+      const step = window.innerHeight * 0.7;
+      for (let y = 0; y < document.documentElement.scrollHeight; y += step) {
+        window.scrollTo(0, y);
+        await new Promise((r) => setTimeout(r, 120));
+      }
+      window.scrollTo(0, document.documentElement.scrollHeight);
+      await new Promise((r) => setTimeout(r, 400));
+      window.scrollTo(0, 0);
+      await new Promise((r) => setTimeout(r, 900));
+    });
     const r = await page.evaluate(AUDIT);
     const at = `${brand}${p}`;
     r.contrast.forEach((c) => note(`CONTRAST ${at} ${c.ratio}:1 (needs ${c.need}) ${c.size}px "${c.txt}"`));

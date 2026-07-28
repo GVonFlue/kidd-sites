@@ -1,4 +1,5 @@
 import { H2 } from './Section';
+import Reveal from './Reveal';
 
 const TOKEN = /^\[NEEDS VERIFICATION/;
 
@@ -9,7 +10,7 @@ export default function ItemList({ heading, body, items = [], numbered = false, 
   const deep = tone === 'deep';
   const Tag = numbered ? 'ol' : 'ul';
   return (
-    <div>
+    <Reveal>
       {heading ? <H2>{heading}</H2> : null}
       {body ? <p className={`mt-4 max-w-prose leading-relaxed ${deep ? 'text-white/80' : 'text-ink/80'}`}>{body}</p> : null}
       <Tag className={`mt-8 grid gap-x-10 gap-y-7 ${columns === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
@@ -27,6 +28,6 @@ export default function ItemList({ heading, body, items = [], numbered = false, 
           </li>
         ))}
       </Tag>
-    </div>
+    </Reveal>
   );
 }

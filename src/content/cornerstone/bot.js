@@ -26,6 +26,33 @@ export const bot = {
     { label: 'Request an HOA review', kind: 'conversion', action: 'hoaReview' },
   ],
 
+  // The section the panel sits in. A bot with a headline and a stated job
+  // converts better than a bare input box, because the visitor knows what it is
+  // for before they have to think of a question.
+  section: {
+    eyebrow: 'The front desk',
+    heading: 'Meet Mason.',
+    body:
+      'Justus is one person with five hundred doors. Mason answers first, so a broken air conditioner never has to wait behind a board meeting, and a question at nine at night still gets a reply.',
+    chips: [
+      'Answers in seconds',
+      'Logs maintenance and dispatches it',
+      'Hands you a person when it matters',
+    ],
+    statusLabel: 'Cornerstone front desk',
+  },
+
+  // A short scripted exchange, shown before the visitor types anything. It
+  // demonstrates the one job that matters most on this brand: taking a
+  // maintenance call off Justus's phone. Clearly a sample, never presented as a
+  // real conversation, and it disappears the moment a real one starts.
+  demo: [
+    { from: 'them', text: 'Our AC stopped working last night.' },
+    { from: 'bot', text: 'Sorry, that is a bad one in July. Quick check first: are there batteries in the thermostat, and has the filter been changed recently?' },
+    { from: 'them', text: 'Filter is filthy actually.' },
+    { from: 'bot', text: 'That is often the whole problem. Swap it and give it an hour. If it is still not cooling, tell me and I will log it and send it straight to the technician.', meta: 'no call needed' },
+  ],
+
   /**
    * Maintenance triage. The bot runs the screening questions before anything
    * escalates, then collects what the trade needs and dispatches.

@@ -1,23 +1,29 @@
 import BotClient from './BotClient';
+import Reveal from './Reveal';
+import { Eyebrow, H2 } from './Section';
 
 /**
- * The conversational agent, Build Standard §9 house pattern.
+ * Mason — the conversational surface. Build Standard §9.
  *
- * Placement is the point: embedded in the page body in the TOP THIRD, not a
- * floating corner bubble. The bot is a headline feature, not an interruption.
+ * Rebuilt in the ProyTech / gvonflue idiom. Three things changed, each for a
+ * reason:
  *
- * This is the Phase 3 shell. Phase 4 wires it to /api/chat. The greeting, the
- * chips and the status line are real and come from content, so what is on screen
- * here is what will be on screen when it is live.
+ * 1. IT HAS A SECTION, not just a panel. An eyebrow, a headline that names it,
+ *    three chips stating its job. A bare input box asks the visitor to invent a
+ *    question; a named agent with a stated job tells them what to ask.
+ * 2. IT OPENS ON A CONVERSATION, not an empty box. A short scripted exchange
+ *    shows what it is good at before anyone types. On Cornerstone the sample is
+ *    a maintenance call resolved without a technician, because keeping those off
+ *    Justus's phone is the actual product.
+ * 3. IT LOOKS LIVE. Status dot, sender labels, a timing note on the reply.
  *
- * Why it matters more than usual on this build: the client is supply constrained
- * and his phone is the bottleneck. On Cornerstone this surface is also the
- * maintenance intake, so its job is to take load OFF the phone rather than
- * generate more calls into it.
+ * The sample is visibly labelled as a sample and is replaced the moment a real
+ * conversation starts. Nothing is presented as a real customer exchange.
+ *
+ * Still embedded in the page body in the top third, never a floating corner
+ * bubble. The bot is a feature, not an interruption.
  */
 export default function BotPanel({ bot, brandKey, enabled = true, tone = 'surface', actions = {} }) {
-  // Fail loudly in development if the panel is asked to render without copy,
-  // rather than silently disappearing from the page.
   if (!bot || !bot.greeting) {
     if (process.env.NODE_ENV !== 'production') {
       throw new Error('BotPanel: no greeting. Bot copy comes from content, not config.');
@@ -25,35 +31,77 @@ export default function BotPanel({ bot, brandKey, enabled = true, tone = 'surfac
     return null;
   }
   if (enabled === false) return null;
+
   const deep = tone === 'deep';
+  const s = bot.section || {};
   const initial = (bot.name || 'M').charAt(0);
 
   return (
-    <div className={`rounded-lg border ${deep ? 'border-white/15 bg-white/5' : 'border-line bg-wash'}`}>
-      <div className={`flex items-center gap-3 border-b px-5 py-4 ${deep ? 'border-white/10' : 'border-line'}`}>
-        <span
-          aria-hidden="true"
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-accent font-display text-base font-bold text-ink"
-        >
-          {initial}
-        </span>
-        <span>
-          <span className="block font-display text-base font-semibold">{bot.name}</span>
-          <span className="flex items-center gap-1.5 text-xs opacity-70">
-            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-accent" />
-            {bot.statusLine}
-          </span>
-        </span>
-      </div>
+    <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-16">
+      <Reveal>
+        <Eyebrow tone={deep ? 'deep' : 'ink'}>{s.eyebrow}</Eyebrow>
+        <H2 className="mt-4">{s.heading}</H2>
+        {s.body ? (
+          <p className={`mt-5 max-w-prose leading-relaxed ${deep ? 'text-white/80' : 'text-ink/80'}`}>
+            {s.body}
+          </p>
+        ) : null}
+        {s.chips?.length ? (
+          <ul className="mt-7 flex flex-wrap gap-2">
+            {s.chips.map((c) => (
+              <li
+                key={c}
+                className={`inline-flex items-center gap-2 rounded-pill border px-3.5 py-2 text-sm ${
+                  deep ? 'border-white/20 text-white/80' : 'border-line text-ink/75'
+                }`}
+              >
+                <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-accent" />
+                {c}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </Reveal>
 
-      <BotClient
-        brand={brandKey}
-        botName={bot.name}
-        chips={bot.chips}
-        greeting={bot.greeting}
-        tone={tone}
-        actions={actions}
-      />
+      <Reveal delay={90}>
+        <div
+          className={`overflow-hidden rounded-frame border shadow-[0_20px_50px_-24px_rgba(26,29,31,.45)] ${
+            deep ? 'border-white/15 bg-white/[0.06]' : 'border-line bg-wash'
+          }`}
+        >
+          <div className={`flex items-center gap-3 border-b px-5 py-4 ${deep ? 'border-white/10' : 'border-line'}`}>
+            <span
+              aria-hidden="true"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent font-display text-base font-bold text-ink"
+            >
+              {initial}
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate font-display text-base font-semibold">{bot.name}</span>
+              <span className="flex items-center gap-1.5 text-xs opacity-75">
+                <span aria-hidden="true" className="relative flex h-2 w-2 shrink-0">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-70 motion-safe:animate-ping" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
+                </span>
+                <span className="truncate">
+                  {s.statusLabel ? `${s.statusLabel} · ` : ''}
+                  {bot.statusLine}
+                </span>
+              </span>
+            </span>
+          </div>
+
+          <BotClient
+            brand={brandKey}
+            botName={bot.name}
+            chips={bot.chips}
+            greeting={bot.greeting}
+            demo={bot.demo || []}
+            tone={tone}
+            actions={actions}
+          />
+        </div>
+      </Reveal>
     </div>
   );
 }

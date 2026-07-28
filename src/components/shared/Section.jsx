@@ -28,7 +28,7 @@ export function Eyebrow({ children, tone = 'ink' }) {
 
 export function H2({ children, className = '' }) {
   return (
-    <h2 className={`font-display text-xl font-bold leading-[1.15] tracking-[-0.02em] md:text-2xl ${className}`}>
+    <h2 className={`font-display text-[26px] font-bold leading-[1.15] tracking-[-0.02em] sm:text-[30px] lg:text-[36px] ${className}`}>
       {children}
     </h2>
   );

@@ -12,10 +12,14 @@ export default function BrandLayout({ children }) {
     <div className="flex min-h-screen flex-col font-sans">
       <JsonLd brandKey="agent" />
       <Header brand={brand} nav={nav} cta={headerCta} />
-      <main id="main" className="flex-1">
-        {children}
-      </main>
-      <Footer brand={brand} otherBrand={other} />
+      {/* Everything below the floating nav lives inside the frame: inset from
+          the viewport on every side, rounded, and clipped. */}
+      <div className="frame flex flex-1 flex-col">
+        <main id="main" className="flex-1">
+          {children}
+        </main>
+        <Footer brand={brand} otherBrand={other} />
+      </div>
     </div>
   );
 }

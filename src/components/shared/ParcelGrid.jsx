@@ -55,7 +55,7 @@ function subdivide(x, y, w, h, depth, rand, out, minW, minH) {
 
 export default function ParcelGrid({
   seed = 7, // seven associations
-  depth = 7,
+  depth = 6,
   className = '',
   tone = 'light', // 'light' on pale grounds, 'dark' on the deep ground
   variant = 'field', // 'field' fills a space, 'rule' is a thin section divider
@@ -67,7 +67,7 @@ export default function ParcelGrid({
   subdivide(0, 0, W, H, variant === 'rule' ? 3 : depth, rand, parcels, 90, 56);
 
   const stroke = tone === 'dark' ? '#FFFFFF' : '#1A1D1F';
-  const strokeOpacity = tone === 'dark' ? 0.1 : 0.07;
+  const strokeOpacity = tone === 'dark' ? 0.05 : 0.045;
   // One parcel is picked out in brass. A plat always has the lot you care about.
   // It is chosen from the right-hand side only, because the left is where the
   // headline sits and a filled rectangle behind type reads as a rendering fault
@@ -88,9 +88,9 @@ export default function ParcelGrid({
       preserveAspectRatio="xMidYMid slice"
       role="presentation"
     >
-      <g fill="none" stroke={stroke} strokeOpacity={strokeOpacity} strokeWidth="1">
+      <g fill="none" stroke={stroke} strokeOpacity={strokeOpacity} strokeWidth="1" vectorEffect="non-scaling-stroke">
         {parcels.map((p, i) => (
-          <rect key={i} x={p.x + 0.5} y={p.y + 0.5} width={p.w - 1} height={p.h - 1} />
+          <rect key={i} x={p.x + 0.5} y={p.y + 0.5} width={p.w - 1} height={p.h - 1} vectorEffect="non-scaling-stroke" />
         ))}
       </g>
       <rect
@@ -99,10 +99,11 @@ export default function ParcelGrid({
         width={parcels[marked].w - 1}
         height={parcels[marked].h - 1}
         fill="#C2832A"
-        fillOpacity={tone === 'dark' ? 0.08 : 0.05}
+        fillOpacity={tone === 'dark' ? 0.055 : 0.04}
         stroke="#C2832A"
-        strokeOpacity={tone === 'dark' ? 0.32 : 0.22}
+        strokeOpacity={tone === 'dark' ? 0.22 : 0.16}
         strokeWidth="1"
+        vectorEffect="non-scaling-stroke"
       />
     </svg>
   );

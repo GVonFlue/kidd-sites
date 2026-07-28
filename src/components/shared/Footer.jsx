@@ -29,7 +29,7 @@ export default function Footer({ brand, otherBrand }) {
   const year = 2026;
 
   return (
-    <footer className="mt-24 border-t border-line bg-ink text-white">
+    <footer className="mt-auto border-t border-line bg-ink text-white">
       <div className="mx-auto max-w-6xl px-5 py-14">
         <div className="grid gap-10 md:grid-cols-3">
           {/* Contact */}
