@@ -26,7 +26,21 @@ export const home = {
     primaryCta: { label: 'Get a free home valuation', href: '/sell#valuation' },
     secondaryCta: { label: 'Call or text Justus', href: 'tel:+13163902120' },
     // Photograph of Justus. No stock imagery anywhere on this build.
-    image: { src: '/agent/justus-portrait.jpg', alt: 'Justus Kidd' },
+    //
+    // `cutout` is the background-free PNG and drives the desktop hero: he stands
+    // directly on the parcel grid and passes behind the section below on scroll.
+    // Transparency is why it must stay a PNG and cannot be re-encoded as JPEG.
+    //
+    // `avatar` is a head-and-shoulders crop of THE SAME cutout, used at phone
+    // and tablet widths where a full-height figure would collide with the
+    // buttons. Cut from the same file on purpose: the earlier square was a
+    // different photograph, so a phone and a laptop showed two different
+    // pictures of the same man on the same page.
+    image: {
+      cutout: '/agent/justus-cutout.png',
+      avatar: '/agent/justus-avatar.png',
+      alt: 'Justus Kidd',
+    },
   },
 
   // Numbers, set in tabular figures. Authority through specificity.

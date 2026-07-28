@@ -20,7 +20,9 @@
     "test:sweep": "node scripts/final-sweep.mjs",
     "lighthouse": "node scripts/lighthouse.mjs",
     "og": "node scripts/make-og.mjs",
-    "verify:live": "node scripts/verify-live.mjs"
+    "verify:live": "node scripts/verify-live.mjs",
+    "shoot:scroll": "node scripts/shoot-scroll.mjs",
+    "test:overflow": "node scripts/test-overflow.mjs"
   },
   "author": "",
   "license": "ISC",

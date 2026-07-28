@@ -3,14 +3,33 @@
  * hierarchy stays consistent instead of being re-decided per page.
  * `tone`: 'surface' | 'wash' | 'deep'
  */
-export default function Section({ tone = 'surface', id, className = '', children, bleed = false }) {
+export default function Section({
+  tone = 'surface',
+  id,
+  className = '',
+  children,
+  bleed = false,
+  /**
+   * `overlap` turns this section into a plane that visibly passes IN FRONT OF
+   * whatever precedes it: rounded top corners and a shadow cast upward.
+   *
+   * It exists for the hero cutout. The figure there is anchored to the hero's
+   * bottom edge and sinks on scroll, and without a legible edge to sink behind
+   * the motion reads as the photograph being cropped rather than as depth.
+   * This is that edge.
+   */
+  overlap = false,
+}) {
   const grounds = {
     surface: 'bg-surface text-ink',
     wash: 'bg-wash text-ink',
     deep: 'bg-surface-deep text-white',
   };
+  const lift = overlap
+    ? 'z-10 rounded-t-[26px] shadow-[0_-16px_40px_-26px_rgba(26,29,31,.45)] md:rounded-t-[34px]'
+    : '';
   return (
-    <section id={id} className={`relative ${grounds[tone]} ${className}`}>
+    <section id={id} className={`relative ${grounds[tone]} ${lift} ${className}`}>
       <div className={bleed ? '' : 'mx-auto max-w-6xl px-5 py-16 md:py-24'}>{children}</div>
     </section>
   );

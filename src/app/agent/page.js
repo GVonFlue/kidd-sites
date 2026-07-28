@@ -23,10 +23,14 @@ const t = (id) => testimonials.find((x) => x.id === id);
 export default function Page() {
   return (
     <>
-      <Hero hero={home.hero} tone="light" seed={7} />
+      {/* `wash` is the back plane. The cutout of Justus stands on it and sinks
+          behind the section below as you scroll, so the two grounds have to
+          differ or the motion reads as a cropped photograph. */}
+      <Hero hero={home.hero} tone="wash" seed={7} />
 
-      {/* Bot in the TOP THIRD, per the conversion architecture minimums. */}
-      <Section tone="surface" className="!pt-0">
+      {/* Bot in the TOP THIRD, per the conversion architecture minimums.
+          `overlap` is what he passes behind. */}
+      <Section tone="surface" overlap>
         <BotPanel bot={bot} brandKey="agent" enabled={brand.bot.enabled} tone="surface" actions={{ booking: '/contact' }} />
       </Section>
 
