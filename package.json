@@ -1,0 +1,43 @@
+{
+  "name": "kidd-sites",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "audit:nulls": "node scripts/audit-nulls.mjs",
+    "audit:copy": "node scripts/copy-audit.mjs",
+    "audit": "npm run audit:nulls && npm run audit:copy && npm run audit:a11y && npm run test:seo && npm run test:sweep",
+    "audit:a11y": "node scripts/a11y.mjs",
+    "shoot": "node scripts/shoot.mjs",
+    "test:leads": "node scripts/test-leads.mjs",
+    "test:failures": "node scripts/test-failures.mjs",
+    "test:chat": "node scripts/test-chat.mjs",
+    "test:prompt": "node scripts/test-prompt.mjs",
+    "test:links": "node scripts/test-links.mjs",
+    "test:seo": "node scripts/test-seo.mjs",
+    "test:sweep": "node scripts/final-sweep.mjs",
+    "lighthouse": "node scripts/lighthouse.mjs",
+    "og": "node scripts/make-og.mjs",
+    "verify:live": "node scripts/verify-live.mjs"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fontsource-variable/archivo": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
+    "next": "^14.2.35",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.5.4",
+    "lighthouse": "^13.4.1",
+    "playwright": "^1.62.0",
+    "postcss": "^8.5.23",
+    "tailwindcss": "^3.4.19"
+  },
+  "private": true
+}
