@@ -12,10 +12,32 @@ import { bot as csBot } from '../src/content/cornerstone/bot.js';
 const results = [];
 const check = (l, p, d = '') => results.push({ l, p, d });
 
+// The scripted sample is the first thing a visitor reads, so it is held to the
+// same tone rule as the live bot.
+const SCARE = /(lose|losing|lost) (your|the)|too late|fall through|worst case|blindside|you could lose|renegotiate fast|sink(s)? (the|your) loan/i;
 for (const [key, bot] of [['agent', agentBot], ['cornerstone', csBot]]) {
   const b = getBrand(key);
   const p = bot.systemPrompt;
   const T = (label, cond, detail) => check(`[${key}] ${label}`, cond, detail);
+
+  const demoText = (bot.demo || []).filter((m) => m.from === 'bot').map((m) => m.text).join(' ');
+  T('sample conversation opens without a scare', !SCARE.test(demoText), demoText.slice(0, 70));
+  T('sample bot lines stay short', (bot.demo || []).filter((m) => m.from === 'bot').every((m) => m.text.split(/\s+/).length <= 45));
+
+  // ── Tone and pacing. Added after the bot opened a first-time buyer with
+  // "you could lose your earnest money", which is true, useful later, and
+  // exactly the wrong thing to say to someone still deciding if they are
+  // allowed to want this.
+  T('helps before it asks for details', /Help first\. Capture second\./i.test(p));
+  T('forbids asking for details in the opening exchanges', /Do not ask for their details yet|only when ONE of these is true/i.test(p));
+  T('has an explicit tone rule', /TONE\. THIS IS THE PART THAT GOES WRONG\./.test(p));
+  T('forbids volunteering worst cases', /Do not open with what can go wrong/i.test(p));
+  T('names the specific scares to avoid', /appraisal gaps/i.test(p) && /losing money/i.test(p));
+  T('still answers a risk asked directly', /If they ask directly about a risk, answer it straight/i.test(p));
+  T('leads with what opens the door', /Lead with what opens the door/i.test(p));
+  T('has a hard length cap', /LENGTH\. HARD LIMIT\./.test(p) && /Sixty words/i.test(p));
+  T('never claims an appointment is booked', /never say an appointment is booked/i.test(p));
+  T('asks one thing at a time', /ask for ONE thing at a time/i.test(p));
 
   // Fair housing — the required prohibitions, each present.
   T('fair housing block present', /FAIR HOUSING\. THIS IS ABSOLUTE\./.test(p));
