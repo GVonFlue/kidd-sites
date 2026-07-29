@@ -128,14 +128,15 @@ const CAPTURE_TOOL = {
     'DO NOT call this early. Help them first. It is only appropriate once EITHER the visitor has asked to be ' +
     'contacted, booked, called, texted or sent something, OR you have already given them at least two ' +
     'substantive, useful answers and they are still engaged. ' +
-    'Requires a name AND at least one of email or phone. ' +
-    'Do not call it twice in one conversation. Do not call it with placeholder or invented values.',
+    'Requires a name AND at least one of email or phone, but ALWAYS TRY FOR BOTH. ' +
+    'Call it again with the same person once you have the missing one, and the record is updated in place ' +
+    'rather than duplicated. Do not call it with placeholder or invented values.',
   input_schema: {
     type: 'object',
     properties: {
       name: { type: 'string', description: 'The visitor\'s name, exactly as they gave it.' },
-      email: { type: 'string', description: 'Email address if they gave one, otherwise omit.' },
-      phone: { type: 'string', description: 'Phone number if they gave one, otherwise omit.' },
+      email: { type: 'string', description: 'Email address. Always try to get this, even if you already have a phone number.' },
+      phone: { type: 'string', description: 'Phone number. Always try to get this, even if you already have an email.' },
       intent: {
         type: 'string',
         enum: ['buy', 'sell', 'invest', 'rent', 'owner', 'hoa', 'maintenance', 'other'],
@@ -196,6 +197,17 @@ function tooEarly(messages) {
   );
 }
 
+/**
+ * What has already been captured this session, so a follow-up that adds the
+ * missing email updates the record instead of creating a second one.
+ *
+ * Best-effort: serverless instances do not share memory, so a second request can
+ * land somewhere that has never seen this session. That is why the lead id is
+ * DERIVED FROM THE SESSION rather than generated — the id is identical either
+ * way, and the sheet upserts on it, so a lost cache costs nothing.
+ */
+const captured = new Map();
+
 async function runCapture(brandKey, input, sessionId) {
   const b = getBrand(brandKey);
   const name = String(input.name || '').trim().slice(0, 200);
@@ -209,19 +221,36 @@ async function runCapture(brandKey, input, sessionId) {
     return { ok: false, message: 'No email and no phone. Ask for whichever they prefer, then call this again.' };
   }
 
-  const wantsAppointment = Boolean(input.preferredTime);
+  // Merge with anything already taken this session, so a second call that only
+  // carries the email does not blank out the phone number from the first.
+  const prior = captured.get(sessionId) || {};
+  const merged = {
+    email: email || prior.email || null,
+    phone: phone || prior.phone || null,
+    intent: input.intent || prior.intent || 'other',
+    timeline: String(input.timeline || '').slice(0, 200) || prior.timeline || '',
+    preferredTime: String(input.preferredTime || '').slice(0, 200) || prior.preferredTime || '',
+    notes: String(input.notes || '').slice(0, 2000) || prior.notes || '',
+    name: name || prior.name,
+  };
+  const isUpdate = Boolean(prior.name);
+
+  const wantsAppointment = Boolean(merged.preferredTime);
   const lead = {
-    id: newLeadId(brandKey),
+    // Derived, not random: the same visitor in the same session always produces
+    // the same id, so the sheet can update the row rather than append a twin.
+    id: `${brandKey}-chat-${sessionId}`.slice(0, 120),
     brand: brandKey,
     source: `${SOURCE_LABEL[brandKey]}${wantsAppointment ? ' (appointment request)' : ''}`,
-    name,
-    email: email || null,
-    phone: phone || null,
-    message: String(input.notes || '').slice(0, 2000) || null,
+    name: merged.name,
+    email: merged.email,
+    phone: merged.phone,
+    message: merged.notes || null,
+    upsert: true,               // the Apps Script updates the row with this id
     meta: {
-      intent: String(input.intent || 'other'),
-      timeline: String(input.timeline || '').slice(0, 200) || undefined,
-      preferredTime: String(input.preferredTime || '').slice(0, 200) || undefined,
+      intent: merged.intent,
+      timeline: merged.timeline || undefined,
+      preferredTime: merged.preferredTime || undefined,
       capturedBy: 'mason',
       sessionId,
     },
@@ -229,25 +258,38 @@ async function runCapture(brandKey, input, sessionId) {
   };
 
   const status = await deliverLead(lead);
+  captured.set(sessionId, merged);
+  if (captured.size > 5000) captured.clear();
+
+  // ── Chase the missing one. An email and a phone are worth far more together:
+  // a phone number alone cannot be sent the guide, and an email alone cannot be
+  // called back the same afternoon. Ask ONCE, with a reason, then let it go.
+  const missing = !merged.email ? 'email' : !merged.phone ? 'phone' : null;
+  const chase = missing === 'email'
+    ? ` You still do not have an email address for them. Ask for it ONCE, and give a reason: it is how Justus sends the valuation, the guide or anything in writing. If they decline, drop it and do not ask again. When you get it, call capture_lead again with the same details plus the email.`
+    : missing === 'phone'
+      ? ` You still do not have a phone number for them. Ask for it ONCE, and give a reason: it is the fastest way for Justus to reach them. If they decline, drop it and do not ask again. When you get it, call capture_lead again with the same details plus the number.`
+      : '';
 
   // What comes back here is what the model will paraphrase to the visitor, so
   // it must be literally true. When nothing persisted, the visitor is still
   // told it worked (the payload is recoverable from the log) because telling
   // them to try again loses the lead outright.
+  const verb = isUpdate ? 'Updated' : 'Saved';
   if (wantsAppointment) {
     return {
       ok: true,
       message:
-        `Saved for ${name}. The requested time "${input.preferredTime}" has been passed to Justus as a REQUEST, not a booking. ` +
+        `${verb} for ${merged.name}. The requested time "${merged.preferredTime}" has been passed to Justus as a REQUEST, not a booking. ` +
         `Tell the visitor Justus will confirm the time directly. Do NOT tell them the appointment is booked or held. ` +
-        `They can also reach him now on ${b.phone.display}.`,
+        `They can also reach him now on ${b.phone.display}.` + chase,
     };
   }
   return {
     ok: true,
     message:
-      `Saved for ${name}. Tell them Justus will follow up on ${email || phone}. ` +
-      `Do not promise a response time. They can also reach him now on ${b.phone.display}.`,
+      `${verb} for ${merged.name}. Tell them Justus will follow up on ${merged.email || merged.phone}. ` +
+      `Do not promise a response time. They can also reach him now on ${b.phone.display}.` + chase,
   };
 }
 

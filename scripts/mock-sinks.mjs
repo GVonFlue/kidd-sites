@@ -18,17 +18,25 @@ createServer((req, res) => {
     if (req.url === '/v1/messages') {
       const sawToolResult = body.includes('tool_result');
       res.setHeader('content-type', 'application/json');
+      // Two shapes, so the phone-then-email follow-up can be exercised: if the
+      // conversation already contains an email address, the mock captures with
+      // it; otherwise it captures with the phone only.
+      const hasEmail = /dana@example\.com/.test(body);
       if (!sawToolResult) {
         res.end(JSON.stringify({ content: [
           { type: 'text', text: 'Got it.' },
           { type: 'tool_use', id: 'tu_1', name: 'capture_lead',
-            input: { name: 'Dana Reed', phone: '316-555-0134', intent: 'sell',
-                     timeline: 'next month', preferredTime: 'Thursday morning',
-                     notes: 'Selling a three bedroom in Derby.' } },
+            input: hasEmail
+              ? { name: 'Dana Reed', email: 'dana@example.com', intent: 'sell' }
+              : { name: 'Dana Reed', phone: '316-555-0134', intent: 'sell',
+                  timeline: 'next month', preferredTime: 'Thursday morning',
+                  notes: 'Selling a three bedroom in Derby.' } },
         ] }));
         return;
       }
-      res.end(JSON.stringify({ content: [{ type: 'text', text: 'Sent Thursday morning to Justus. He will confirm the time with you directly.' }] }));
+      res.end(JSON.stringify({ content: [{ type: 'text', text: hasEmail
+        ? 'Sent through. Justus has both your number and your email.'
+        : 'Sent Thursday morning to Justus. He will confirm the time with you directly. What email should he send the valuation to?' }] }));
       return;
     }
     const which = req.url.replace('/', '') || 'sheet';

@@ -83,6 +83,42 @@ await asked.json();
 const askedDump = await (await fetch('http://localhost:4001/dump')).json();
 check('an explicit "call me" is captured immediately', askedDump.sheet.length === 1, `${askedDump.sheet.length} row(s)`);
 
+// ── ALWAYS TRY FOR BOTH.
+// A phone-only capture must chase the email, and the follow-up must UPDATE the
+// same record rather than creating a second one. Two rows for one person is
+// worse than one row with a missing field: the client calls one and emails the
+// other and looks disorganised to a lead he has not spoken to yet.
+await fetch('http://localhost:4001/reset', { method: 'POST' });
+const SESSION = 'test-both-1';
+const first = await fetch('http://localhost:3000/api/chat', {
+  method: 'POST', headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ brand: 'agent', sessionId: SESSION,
+    messages: [{ role: 'user', content: 'Can Justus call me Thursday morning? Dana Reed, 316-555-0134.' }] }),
+});
+const firstJson = await first.json();
+check('phone-only capture still saves', firstJson.captured === true, `captured=${firstJson.captured}`);
+check('and asks for the email', /email/i.test(firstJson.reply || ''), String(firstJson.reply || '').slice(-60));
+
+const second = await fetch('http://localhost:3000/api/chat', {
+  method: 'POST', headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ brand: 'agent', sessionId: SESSION,
+    messages: [
+      { role: 'user', content: 'Can Justus call me Thursday morning? Dana Reed, 316-555-0134.' },
+      { role: 'assistant', content: 'What email should he send the valuation to?' },
+      { role: 'user', content: 'dana@example.com' },
+    ] }),
+});
+await second.json();
+const bothDump = await (await fetch('http://localhost:4001/dump')).json();
+const rows = bothDump.sheet;
+check('two captures, two payloads sent', rows.length === 2, `${rows.length}`);
+check('same lead id both times, so the sheet updates in place', rows.length === 2 && rows[0].id === rows[1].id, rows.map((r) => r.id).join(' | '));
+check('the id is derived from the session, not random', String(rows[0]?.id || '').includes(SESSION), rows[0]?.id);
+check('upsert flag set for the sheet', rows.every((r) => r.upsert === true));
+check('the second payload carries BOTH details', Boolean(rows[1]?.email) && Boolean(rows[1]?.phone), `${rows[1]?.email} / ${rows[1]?.phone}`);
+check('the follow-up did not blank the earlier phone', rows[1]?.phone === rows[0]?.phone, `${rows[0]?.phone} -> ${rows[1]?.phone}`);
+check('the follow-up kept the requested time', /Thursday/.test(rows[1]?.meta?.preferredTime || ''), rows[1]?.meta?.preferredTime);
+
 const bad = await fetch('http://localhost:3000/api/chat', {
   method: 'POST', headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ brand: 'cornerstone', sessionId: 'test-capture-2', messages: [{ role: 'user', content: 'hello' }] }),
