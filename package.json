@@ -22,7 +22,9 @@
     "og": "node scripts/make-og.mjs",
     "verify:live": "node scripts/verify-live.mjs",
     "shoot:scroll": "node scripts/shoot-scroll.mjs",
-    "test:overflow": "node scripts/test-overflow.mjs"
+    "test:overflow": "node scripts/test-overflow.mjs",
+    "audit:conversion": "node scripts/audit-conversion.mjs",
+    "test:mason": "node scripts/test-mason-capture.mjs"
   },
   "author": "",
   "license": "ISC",
