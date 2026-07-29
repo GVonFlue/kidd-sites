@@ -81,9 +81,17 @@ var CONFIG = {
   GUIDE_FROM_NAME: 'Justus Kidd',
 };
 
+// Column order is fixed. Adding a column means adding it to BOTH this list and
+// the appendRow below, in the same position, or every row after the change is
+// shifted by one and the sheet quietly becomes wrong.
 var HEADERS = [
   'Received (UTC)', 'Brand', 'Source (which form)', 'Name', 'Email', 'Phone',
-  'Message', 'Property address', 'Units', 'Association', 'Unit count', 'Role',
+  'Message',
+  // Written by Mason, the chatbot. A chat capture is a lead like any other and
+  // lands in the same sheet, but it carries three things a form does not: what
+  // the person is trying to do, when, and the time they asked for.
+  'Intent', 'Timeline', 'Requested time', 'Captured by',
+  'Property address', 'Units', 'Association', 'Unit count', 'Role',
   'Square feet', 'Move in', 'Lead ID', 'User agent',
 ];
 
@@ -93,7 +101,7 @@ function doPost(e) {
     var sheet = getSheet_();
     var meta = lead.meta || {};
 
-    sheet.appendRow([
+    var row = [
       lead.receivedAt || new Date().toISOString(),
       lead.brand || '',
       lead.source || '',
@@ -101,6 +109,10 @@ function doPost(e) {
       lead.email || '',
       lead.phone || '',
       lead.message || '',
+      meta.intent || '',
+      meta.timeline || '',
+      meta.preferredTime || '',
+      meta.capturedBy || 'form',
       meta.address || '',
       meta.units || '',
       meta.associationName || '',
@@ -110,9 +122,29 @@ function doPost(e) {
       meta.moveIn || '',
       lead.id || '',
       lead.userAgent || '',
-    ]);
+    ];
 
-    if (CONFIG.SEND_EMAIL && CONFIG.NOTIFY_TO) notify_(lead, meta);
+    // ── UPSERT, not append.
+    //
+    // Mason takes a phone number, saves the lead so it can never be lost, then
+    // asks for the email and saves again. Two appends would put the same person
+    // in the sheet twice, and the client would call one of them and email the
+    // other. So a lead that carries `upsert` and an id already in column S
+    // REPLACES that row instead of adding one.
+    //
+    // The lead id for a chat capture is derived from the visitor's session, so
+    // it is identical on both calls even if the two requests are handled by
+    // different servers.
+    var updatedRow = lead.upsert ? findRowById_(sheet, lead.id) : 0;
+    var isNew = updatedRow === 0;
+    if (isNew) sheet.appendRow(row);
+    else sheet.getRange(updatedRow, 1, 1, row.length).setValues([row]);
+
+    // Only notify on the first save, or when the update adds something the
+    // client would act on. A second email saying the same thing plus an address
+    // trains him to ignore the first one.
+    var worthTelling = isNew || (lead.upsert && meta.notifyUpdate !== false && !isNew && lead.email && lead.phone);
+    if (CONFIG.SEND_EMAIL && CONFIG.NOTIFY_TO && worthTelling) notify_(lead, meta, !isNew);
 
     // The guide goes out AFTER the row is written and inside its own try, so a
     // problem with the attachment can never cost us the lead itself. Losing the
@@ -194,6 +226,22 @@ function TEST_sendGuideToMe() {
   console.log(sent ? 'Sent to ' + to : 'Not sent. Check GUIDE_FILE_ID is set and the source matched.');
 }
 
+/**
+ * Find an existing row by Lead ID. Returns the 1-based row number, or 0.
+ * Reads only the Lead ID column, so it stays fast as the sheet grows.
+ */
+function findRowById_(sheet, id) {
+  if (!id) return 0;
+  var last = sheet.getLastRow();
+  if (last < 2) return 0;
+  var col = HEADERS.indexOf('Lead ID') + 1;
+  var values = sheet.getRange(2, col, last - 1, 1).getValues();
+  for (var i = values.length - 1; i >= 0; i--) {      // newest first
+    if (String(values[i][0]) === String(id)) return i + 2;
+  }
+  return 0;
+}
+
 function doGet() {
   return json_({ ok: true, note: 'Lead sink is live. POST only.' });
 }
@@ -205,28 +253,47 @@ function getSheet_() {
     sheet = ss.getSheets()[0];
     sheet.setName(CONFIG.SHEET_NAME);
   }
-  // Write the header row once, and freeze it so the sheet stays readable as it grows.
-  if (sheet.getLastRow() === 0 || !sheet.getRange(1, 1).getValue()) {
+  // Write the header row, and REWRITE it if it does not match. The first version
+  // only wrote headers into an empty sheet, so when columns were added later the
+  // sheet kept the old header row and every new column was unlabelled. Only row
+  // one is ever touched; no lead data is read or modified.
+  var current = sheet.getLastRow() > 0
+    ? sheet.getRange(1, 1, 1, HEADERS.length).getValues()[0].join('|')
+    : '';
+  if (current !== HEADERS.join('|')) {
     sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]).setFontWeight('bold');
     sheet.setFrozenRows(1);
     sheet.setColumnWidth(1, 165);
     sheet.setColumnWidth(3, 230);
     sheet.setColumnWidth(7, 320);
+    sheet.setColumnWidth(10, 150);
   }
   return sheet;
 }
 
-function notify_(lead, meta) {
+function notify_(lead, meta, isUpdate) {
   var isCornerstone = lead.brand === 'cornerstone';
   var phoneBack = isCornerstone ? '(316) 390-1009' : '(316) 390-2120';
 
   var lines = [
-    lead.source,
+    isUpdate ? lead.source + '  (updated — they came back with more)' : lead.source,
     '',
     'Name:   ' + (lead.name || ''),
     'Email:  ' + (lead.email || ''),
     'Phone:  ' + (lead.phone || 'not given'),
   ];
+  // An appointment request goes at the TOP of the email, because it is the only
+  // kind of lead here with a clock on it. Mason is not permitted to tell the
+  // visitor a time is confirmed, so someone has to actually confirm it.
+  if (meta.preferredTime) {
+    lines.splice(1, 0,
+      '',
+      '*** THEY ASKED FOR A TIME: ' + meta.preferredTime + ' ***',
+      'Mason did NOT confirm it. Nothing is booked until you reply to them.');
+  }
+  if (meta.intent) lines.push('Wants to: ' + meta.intent);
+  if (meta.timeline) lines.push('Timeline: ' + meta.timeline);
+  if (meta.capturedBy === 'mason') lines.push('Captured by: Mason, in the website chat');
   if (meta.address) lines.push('Address: ' + meta.address);
   if (meta.associationName) lines.push('Association: ' + meta.associationName + (meta.unitCount ? ' (' + meta.unitCount + ' units)' : ''));
   if (meta.role) lines.push('Role: ' + meta.role);
@@ -243,7 +310,7 @@ function notify_(lead, meta) {
 
   MailApp.sendEmail(
     CONFIG.NOTIFY_TO,
-    'New lead: ' + (lead.name || 'someone') + ' — ' + (lead.source || 'website'),
+    (isUpdate ? 'Updated: ' : meta.preferredTime ? 'Appointment request: ' : 'New lead: ') + (lead.name || 'someone') + ' — ' + (lead.source || 'website'),
     lines.join('\n'),
     opts
   );

@@ -24,7 +24,8 @@
     "shoot:scroll": "node scripts/shoot-scroll.mjs",
     "test:overflow": "node scripts/test-overflow.mjs",
     "audit:conversion": "node scripts/audit-conversion.mjs",
-    "test:mason": "node scripts/test-mason-capture.mjs"
+    "test:mason": "node scripts/test-mason-capture.mjs",
+    "test:sheet": "node scripts/test-sheet-columns.mjs"
   },
   "author": "",
   "license": "ISC",
