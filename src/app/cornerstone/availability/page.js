@@ -7,8 +7,12 @@ import ClosingCta from '@/components/shared/ClosingCta';
 import { H2 } from '@/components/shared/Section';
 import { availability } from '@/content/cornerstone/pages';
 import { bot } from '@/content/cornerstone/bot';
+import PortalBar from '@/components/shared/PortalBar';
+import { getBrand } from '@/config';
 
 export const metadata = pageMetadata('cornerstone', '/availability');
+const brand = getBrand('cornerstone');
+
 export default function Page() {
   return (<>
     <Hero hero={availability.hero} tone="deep" seed={43} />
@@ -25,7 +29,17 @@ export default function Page() {
       </ul>
       <p className="mt-8 max-w-prose border-l-2 border-accent pl-5 text-sm leading-relaxed opacity-80">{availability.screening.note}</p>
     </Section>
-    <Section tone="surface"><ItemList {...availability.residents} columns={3} /></Section>
+    <Section tone="surface">
+      <ItemList {...availability.residents} columns={3} />
+      {/* Renders only once the AppFolio portal URLs are in config. */}
+      <div className="mt-12">
+        <PortalBar
+          portals={brand.external.portals}
+          heading={availability.portals.heading}
+          note={availability.portals.note}
+        />
+      </div>
+    </Section>
     <Section tone="deep"><ClosingCta block={availability.closing} tone="deep" /></Section>
   </>);
 }

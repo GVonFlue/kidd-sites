@@ -1,0 +1,53 @@
+/**
+ * OWNER AND RESIDENT PORTAL LINKS.
+ *
+ * AppFolio hosts both portals itself. There is no login to build here and there
+ * should not be one: an owner's statements and a resident's ledger live in
+ * AppFolio, and a second set of credentials on this site would be a liability
+ * with no upside.
+ *
+ * What this site owes them is the DOOR — obvious, above the fold on the pages
+ * they land on, and never more than one tap away.
+ *
+ * It renders nothing at all until the real URLs are in
+ * `external.portals` in the brand config. That is deliberate. A portal button
+ * that goes nowhere is worse than no button, because a resident who taps it and
+ * lands on an error calls the office, which is the exact call this is meant to
+ * prevent.
+ */
+export default function PortalBar({ portals = [], tone = 'surface', heading, note }) {
+  if (!portals.length) return null;
+  const deep = tone === 'deep';
+
+  return (
+    <div>
+      {heading ? (
+        <h2 className={`font-display text-[22px] font-bold tracking-[-0.01em] ${deep ? 'text-white' : 'text-ink'}`}>
+          {heading}
+        </h2>
+      ) : null}
+      <ul className="mt-5 flex flex-wrap gap-3">
+        {portals.map((p) => (
+          <li key={p.url}>
+            <a
+              href={p.url}
+              className={`inline-flex min-h-[48px] items-center gap-2 rounded-pill px-5 text-sm font-semibold transition-colors ${
+                p.primary
+                  ? 'bg-accent text-ink hover:bg-accent-lift'
+                  : deep
+                    ? 'border border-white/25 text-white hover:bg-white/10'
+                    : 'border border-line bg-surface text-ink hover:bg-wash'
+              }`}
+            >
+              {p.label}
+              <span aria-hidden="true">&rarr;</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      {note ? (
+        <p className={`mt-4 max-w-prose text-sm leading-relaxed ${deep ? 'text-white/70' : 'text-ink/75'}`}>{note}</p>
+      ) : null}
+    </div>
+  );
+}

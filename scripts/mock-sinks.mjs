@@ -12,6 +12,25 @@ createServer((req, res) => {
   let body = '';
   req.on('data', (c) => (body += c));
   req.on('end', () => {
+    // A stand-in Anthropic Messages endpoint, so the chatbot's tool-use loop
+    // can be driven deterministically: first call returns a capture_lead tool
+    // call, second returns the sentence Mason says afterwards.
+    if (req.url === '/v1/messages') {
+      const sawToolResult = body.includes('tool_result');
+      res.setHeader('content-type', 'application/json');
+      if (!sawToolResult) {
+        res.end(JSON.stringify({ content: [
+          { type: 'text', text: 'Got it.' },
+          { type: 'tool_use', id: 'tu_1', name: 'capture_lead',
+            input: { name: 'Dana Reed', phone: '316-555-0134', intent: 'sell',
+                     timeline: 'next month', preferredTime: 'Thursday morning',
+                     notes: 'Selling a three bedroom in Derby.' } },
+        ] }));
+        return;
+      }
+      res.end(JSON.stringify({ content: [{ type: 'text', text: 'Sent Thursday morning to Justus. He will confirm the time with you directly.' }] }));
+      return;
+    }
     const which = req.url.replace('/', '') || 'sheet';
     if (which === 'crm-fail') { crmFails = true; res.end('{"ok":true}'); return; }
     if (which === 'crm-ok') { crmFails = false; res.end('{"ok":true}'); return; }

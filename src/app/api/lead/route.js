@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { forms } from '@/content/shared/forms';
+import { deliverLead, newLeadId } from '@/lib/leads';
 
 /**
  * ONE ENDPOINT, EVERY FORM, BOTH BRANDS. Build Standard §8.
@@ -46,74 +47,6 @@ function rateLimited(ip, limit = RATE_LIMIT, windowMs = 60_000) {
 }
 
 const isEmail = (s) => typeof s === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s.trim());
-
-/** External record IDs are ALWAYS strings. Several real estate CRMs use 64-bit
- *  integers, which JavaScript silently corrupts above 2^53. Never parse one. */
-const asId = (v) => (v === null || v === undefined ? null : String(v));
-
-async function postJson(url, body, timeoutMs = 8000) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      signal: ctrl.signal,
-    });
-    const text = await res.text().catch(() => '');
-    return { ok: res.ok, status: res.status, body: text.slice(0, 500) };
-  } catch (e) {
-    return { ok: false, status: 0, body: String(e && e.message ? e.message : e) };
-  } finally {
-    clearTimeout(t);
-  }
-}
-
-// ── Step 2. Source of truth ─────────────────────────────────────────────────
-async function toSheet(lead) {
-  const url = process.env.SHEETS_WEBHOOK_URL;
-  if (!url) return { skipped: true, reason: 'SHEETS_WEBHOOK_URL not set' };
-  return postJson(url, lead);
-}
-
-// ── Step 3. CRM. Source tag set EXPLICITLY, because most CRMs default
-// unattributed API leads to "Other", which destroys the reporting that proves
-// ROI at the 60-day case study.
-//
-// Lofty (formerly Chime): the Open API is NOT gated behind a plan tier. The
-// client gets their own key from Settings > Integrations > API in Lofty. A
-// developer account with a risk assessment is only needed to publish a public
-// integration, which this is not.
-//
-// FALLBACK IF THE KEY NEVER ARRIVES (Build Standard §8 requires one to be
-// identified up front): the Google Sheet remains the record, and the Apps
-// Script emails the lead to justus@agentkidd.com on arrival. Lofty can ingest
-// leads by parsing that email, so the lead reaches the CRM either way. That is
-// the reason the notification exists rather than being a nicety. ────────────
-async function toCrm(lead) {
-  const key = process.env.CRM_API_KEY;
-  const url = process.env.CRM_ENDPOINT_URL;
-  if (!key || !url) return { skipped: true, reason: 'CRM_API_KEY or CRM_ENDPOINT_URL not set' };
-  const res = await postJson(url, {
-    apiKey: key,
-    firstName: lead.name,
-    email: lead.email,
-    phone: lead.phone || null,
-    note: lead.message || null,
-    source: lead.source,          // distinct per brand AND per form
-    sourceDetail: lead.brand,
-    externalId: asId(lead.id),
-  });
-  return res;
-}
-
-// ── Step 4. GHL. Skipped silently until it is live. ─────────────────────────
-async function toGhl(lead) {
-  const url = process.env.GHL_WEBHOOK_URL;
-  if (!url) return { skipped: true, reason: 'GHL_WEBHOOK_URL not set' };
-  return postJson(url, lead);
-}
 
 function parseBody(raw, contentType) {
   if (contentType.includes('application/json')) return JSON.parse(raw);
@@ -185,7 +118,7 @@ export async function POST(request) {
   }
 
   const lead = {
-    id: `${def.brand}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`,
+    id: newLeadId(def.brand),
     brand: def.brand,                 // which site
     source: def.source,               // which form, human-readable
     name,
@@ -197,26 +130,9 @@ export async function POST(request) {
     userAgent: (request.headers.get('user-agent') || '').slice(0, 300),
   };
 
-  // ── Delivery. Sheet first, and its result alone decides what the visitor sees.
-  const sheet = await toSheet(lead);
-
-  // CRM and GHL run after, and their failures are logged and swallowed.
-  const [crm, ghl] = await Promise.all([toCrm(lead), toGhl(lead)]);
-  if (crm && !crm.ok && !crm.skipped) console.error('[lead] CRM push failed', lead.id, crm.status, crm.body);
-  if (ghl && !ghl.ok && !ghl.skipped) console.error('[lead] GHL push failed', lead.id, ghl.status, ghl.body);
-
-  const persisted = sheet.ok === true;
-  if (!persisted) {
-    // Nothing durable accepted this lead. The visitor must still be told it
-    // worked, so the full payload goes to the server log where it is recoverable
-    // from Vercel. This line is the last line of defence against a lost lead.
-    console.error('[lead] NOT PERSISTED — recover from this log line:', JSON.stringify(lead));
-  }
-
-  const status = { persisted, sheet, crm, ghl };
-  console.log('[lead]', lead.id, lead.source, JSON.stringify({
-    persisted, sheet: sheet.skipped ? 'skipped' : sheet.ok, crm: crm.skipped ? 'skipped' : crm.ok, ghl: ghl.skipped ? 'skipped' : ghl.ok,
-  }));
+  // ── Delivery. One shared path with the chatbot, so both capture surfaces
+  // write to the Sheet through exactly the same code.
+  const status = await deliverLead(lead);
 
   // The visitor sees success either way. Build Standard §8: never surface an
   // integration failure to the end user.

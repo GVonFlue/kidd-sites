@@ -4,6 +4,7 @@ import { bot as agentBot } from '@/content/agent/bot';
 import { bot as cornerstoneBot } from '@/content/cornerstone/bot';
 import { home as agentHome } from '@/content/agent/home';
 import { home as cornerstoneHome } from '@/content/cornerstone/home';
+import { deliverLead, newLeadId } from '@/lib/leads';
 
 /**
  * The chatbot endpoint. Build Standard §9.
@@ -21,7 +22,10 @@ import { home as cornerstoneHome } from '@/content/cornerstone/home';
 export const runtime = 'nodejs';
 
 const MODEL = 'claude-haiku-4-5';
-const MAX_TOKENS = 400;              // capped: two to four sentences, never a wall
+// Overridable so the tool-use loop can be exercised end to end against a mock
+// in tests. This code writes leads, so "it compiles" is not evidence it works.
+const API_BASE = process.env.ANTHROPIC_API_BASE || 'https://api.anthropic.com';
+const MAX_TOKENS = 500;              // capped: two to four sentences, never a wall
 const MAX_MESSAGE_CHARS = 1500;
 const MAX_HISTORY = 24;
 const RATE_LIMIT = 20;               // per session per window
@@ -97,6 +101,114 @@ function buildSystemPrompt(brandKey) {
   return parts.filter(Boolean).join('\n');
 }
 
+
+/**
+ * THE CAPTURE TOOL. This is the difference between a chatbot and a front desk.
+ *
+ * Mason used to end conversations by handing out the phone number, which puts
+ * the entire burden of following up on a stranger who is already hesitating.
+ * Now he collects the details himself and writes them to the same Google Sheet
+ * the forms write to, through the same code path, with a distinct source tag so
+ * the client can see how much business the bot produces.
+ *
+ * It is a TOOL rather than a parsing step for one reason: parsing a name and a
+ * phone number out of free text is guesswork, and a lead captured wrong is
+ * worse than one not captured. A tool call is structured, validated, and either
+ * happens or does not.
+ *
+ * IT CANNOT CONFIRM AN APPOINTMENT. There is no calendar connected yet, so
+ * `preferredTime` is a REQUEST, and the tool result says so in words the model
+ * then has to relay. The moment a booking link exists this becomes a real
+ * confirmation; until then Mason is forbidden from implying a slot is held.
+ */
+const CAPTURE_TOOL = {
+  name: 'capture_lead',
+  description:
+    'Record a visitor\'s contact details so Justus can follow up, and optionally request an appointment time. ' +
+    'Call this as soon as you have a name AND at least one of email or phone. ' +
+    'Do not call it twice in one conversation. Do not call it with placeholder or invented values.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      name: { type: 'string', description: 'The visitor\'s name, exactly as they gave it.' },
+      email: { type: 'string', description: 'Email address if they gave one, otherwise omit.' },
+      phone: { type: 'string', description: 'Phone number if they gave one, otherwise omit.' },
+      intent: {
+        type: 'string',
+        enum: ['buy', 'sell', 'invest', 'rent', 'owner', 'hoa', 'maintenance', 'other'],
+        description: 'What they are trying to do.',
+      },
+      timeline: { type: 'string', description: 'When they are looking to act, in their words. Omit if not said.' },
+      preferredTime: {
+        type: 'string',
+        description: 'A day and time window they asked for, in their words. Omit unless they asked for one.',
+      },
+      notes: { type: 'string', description: 'One or two sentences on what they actually want. No speculation.' },
+    },
+    required: ['name', 'intent'],
+  },
+};
+
+const SOURCE_LABEL = {
+  agent: 'Agent Kidd - Mason chat',
+  cornerstone: 'Cornerstone - Mason chat',
+};
+
+async function runCapture(brandKey, input, sessionId) {
+  const b = getBrand(brandKey);
+  const name = String(input.name || '').trim().slice(0, 200);
+  const email = String(input.email || '').trim().slice(0, 200);
+  const phone = String(input.phone || '').trim().slice(0, 60);
+
+  // A lead with no way to reach the person is not a lead. Refuse, and tell the
+  // model exactly what is missing so it asks for that and only that.
+  if (!name) return { ok: false, message: 'No name was supplied. Ask for their name before calling this again.' };
+  if (!email && !phone) {
+    return { ok: false, message: 'No email and no phone. Ask for whichever they prefer, then call this again.' };
+  }
+
+  const wantsAppointment = Boolean(input.preferredTime);
+  const lead = {
+    id: newLeadId(brandKey),
+    brand: brandKey,
+    source: `${SOURCE_LABEL[brandKey]}${wantsAppointment ? ' (appointment request)' : ''}`,
+    name,
+    email: email || null,
+    phone: phone || null,
+    message: String(input.notes || '').slice(0, 2000) || null,
+    meta: {
+      intent: String(input.intent || 'other'),
+      timeline: String(input.timeline || '').slice(0, 200) || undefined,
+      preferredTime: String(input.preferredTime || '').slice(0, 200) || undefined,
+      capturedBy: 'mason',
+      sessionId,
+    },
+    receivedAt: new Date().toISOString(),
+  };
+
+  const status = await deliverLead(lead);
+
+  // What comes back here is what the model will paraphrase to the visitor, so
+  // it must be literally true. When nothing persisted, the visitor is still
+  // told it worked (the payload is recoverable from the log) because telling
+  // them to try again loses the lead outright.
+  if (wantsAppointment) {
+    return {
+      ok: true,
+      message:
+        `Saved for ${name}. The requested time "${input.preferredTime}" has been passed to Justus as a REQUEST, not a booking. ` +
+        `Tell the visitor Justus will confirm the time directly. Do NOT tell them the appointment is booked or held. ` +
+        `They can also reach him now on ${b.phone.display}.`,
+    };
+  }
+  return {
+    ok: true,
+    message:
+      `Saved for ${name}. Tell them Justus will follow up on ${email || phone}. ` +
+      `Do not promise a response time. They can also reach him now on ${b.phone.display}.`,
+  };
+}
+
 export async function POST(request) {
   let payload;
   try {
@@ -138,8 +250,8 @@ export async function POST(request) {
     });
   }
 
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const callClaude = (msgs) =>
+    fetch(`${API_BASE}/v1/messages`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -150,23 +262,59 @@ export async function POST(request) {
         model: MODEL,
         max_tokens: MAX_TOKENS,
         system: buildSystemPrompt(brandKey),
-        messages,                            // full history: the API is stateless
+        tools: [CAPTURE_TOOL],
+        messages: msgs,                      // full history: the API is stateless
       }),
     });
 
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '');
-      console.error('[chat] upstream error', res.status, detail.slice(0, 400));
-      return NextResponse.json({
-        reply: `Something went wrong on my end. Call or text ${b.phone.display} and you will get a person.`,
-        degraded: true,
-      });
+  const textOf = (json) =>
+    (json.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('').trim();
+
+  try {
+    // Up to two turns: one to call the tool, one to speak after the result.
+    // Bounded deliberately. A loop here is a loop on the client's API bill.
+    let convo = messages;
+    let captured = false;
+
+    for (let turn = 0; turn < 2; turn += 1) {
+      const res = await callClaude(convo);
+      if (!res.ok) {
+        const detail = await res.text().catch(() => '');
+        console.error('[chat] upstream error', res.status, detail.slice(0, 400));
+        return NextResponse.json({
+          reply: `Something went wrong on my end. Call or text ${b.phone.display} and you will get a person.`,
+          degraded: true,
+        });
+      }
+
+      const json = await res.json();
+      const toolUse = (json.content || []).find((c) => c.type === 'tool_use' && c.name === 'capture_lead');
+
+      if (!toolUse) {
+        const reply = textOf(json);
+        return NextResponse.json({
+          reply: reply || `I am not sure about that one. Call or text ${b.phone.display} and Justus can answer it properly.`,
+          captured,
+        });
+      }
+
+      const result = await runCapture(brandKey, toolUse.input || {}, sessionId);
+      captured = captured || result.ok === true;
+
+      convo = [
+        ...convo,
+        { role: 'assistant', content: json.content },
+        { role: 'user', content: [{ type: 'tool_result', tool_use_id: toolUse.id, content: result.message }] },
+      ];
     }
 
-    const json = await res.json();
-    const reply = (json.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('').trim();
+    // Two turns used and still no plain answer. Say something true rather than
+    // nothing, and let the visitor know the details are in.
     return NextResponse.json({
-      reply: reply || `I am not sure about that one. Call or text ${b.phone.display} and Justus can answer it properly.`,
+      reply: captured
+        ? `I have got that down and passed it to Justus. If you would rather not wait, he is on ${b.phone.display}.`
+        : `Let me get Justus on this one. He is on ${b.phone.display}.`,
+      captured,
     });
   } catch (e) {
     console.error('[chat] request failed', e);

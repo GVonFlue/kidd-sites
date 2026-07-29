@@ -142,6 +142,12 @@ export const availability = {
       { label: 'Emergencies', line: 'Gas, fire, flooding or anything dangerous: call 911 first, then (316) 390-1009.', href: 'tel:+13163901009' },
     ],
   },
+  // Renders only when the AppFolio portal URLs are set in config.
+  portals: {
+    heading: 'Residents and owners: your portal',
+    note:
+      'Rent, statements, documents and maintenance history live in the resident and owner portals. They are handled by our management system, so your login is the same one you already have.',
+  },
   closing: {
     heading: 'Questions before you apply?',
     body: 'Leasing will answer them. So will the chat, and it does not put you on hold.',

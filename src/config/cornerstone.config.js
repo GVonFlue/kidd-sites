@@ -54,9 +54,18 @@ export const brand = {
     crm: 'lofty',
     pmSoftware: 'appfolio',
     leadSourceTag: 'ProyTech Site — Cornerstone',
-    searchHandoffUrl: null,          // AppFolio rental listings
-    // Real portal URLs not yet captured from the live AppFolio site.
-    portals: [],                     // [{ label: 'Resident portal', url }, ...]
+    // AppFolio's public listings page for this account. Read it off the
+    // AppFolio site: it is the URL the "Vacancies" link already points at.
+    // Setting it lights up every "See available rentals" button on the build.
+    searchHandoffUrl: null,
+
+    // Owner and resident portals are HOSTED BY APPFOLIO. Nothing is built here.
+    // Log in, copy the two portal URLs off the live site, paste them in, and the
+    // buttons appear. Until then PortalBar renders nothing, because a portal
+    // button that goes nowhere generates the support call it exists to prevent.
+    //   [{ label: 'Resident portal', url: '...', primary: true },
+    //    { label: 'Owner portal',    url: '...' }]
+    portals: [],
     booking: null,
     // Committed scope: replicate AppFolio listing publishing on the new site.
     // Blocked on a formal AppFolio API key request plus the client's login.
