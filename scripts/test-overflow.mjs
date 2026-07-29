@@ -1,10 +1,23 @@
 /**
- * Horizontal overflow, on every route, at the three narrowest widths that
- * matter. A single element wider than the viewport gives the whole page a
- * sideways scroll, and it is invisible in a screenshot taken at a wider size.
+ * Horizontal overflow, on every route, at the narrowest widths that matter.
  *
- * Also reports the widest offending element, because "the page overflows" is
- * not actionable and "the nav rail is 412px" is.
+ * WHY THIS DOES NOT JUST CHECK scrollWidth. The page frame is `overflow: hidden`,
+ * so an element wider than the viewport does NOT produce a sideways scroll — it
+ * is silently CLIPPED. scrollWidth stays equal to clientWidth and the page looks
+ * fine to any test that only asks "does this scroll sideways". The visitor sees
+ * a card with its left and right edges cut off.
+ *
+ * That is exactly how the chat panel shipped broken on phones: one `whitespace-
+ * nowrap` status line set the min-content width of its grid track, the track
+ * grew past the viewport, and the frame quietly cut the card in half.
+ *
+ * So this measures TWO things:
+ *   1. document scrollWidth vs clientWidth  (unclipped overflow)
+ *   2. any element wider than the viewport  (clipped overflow — the silent one)
+ *
+ * It also waits for the scripted bot conversation to finish playing, because
+ * the widest content on the page does not exist until several seconds after
+ * load.
  */
 import { chromium } from 'playwright';
 
@@ -39,21 +52,30 @@ for (const width of WIDTHS) {
         }
         window.scrollTo(0, 0);
       });
+      // The scripted bot conversation reveals a line at a time over ~6s. Its
+      // last bubbles are the widest content on the page.
+      await page.waitForTimeout(6500);
       const r = await page.evaluate((w) => {
         const doc = document.documentElement;
         let worst = null;
         for (const el of document.querySelectorAll('body *')) {
           const b = el.getBoundingClientRect();
           if (b.width === 0) continue;
-          const right = b.right + window.scrollX;
-          if (right > w + 1 && (!worst || right > worst.right)) {
-            worst = { right: Math.round(right), tag: el.tagName.toLowerCase(), cls: String(el.className).slice(0, 60) };
+          // SVG decoration is deliberately oversized and clipped by its own
+          // wrapper; it is not a layout fault.
+          if (el.ownerSVGElement || el.tagName.toLowerCase() === 'svg') continue;
+          if (b.width > w + 1 && (!worst || b.width > worst.w)) {
+            worst = {
+              w: Math.round(b.width),
+              tag: el.tagName.toLowerCase(),
+              cls: String(el.className || '').slice(0, 70),
+            };
           }
         }
         return { scrollW: doc.scrollWidth, clientW: doc.clientWidth, worst };
       }, width);
       checked += 1;
-      if (r.scrollW > r.clientW + 1) bad.push({ width, at: `${brand}${p}`, ...r });
+      if (r.scrollW > r.clientW + 1 || r.worst) bad.push({ width, at: `${brand}${p}`, ...r });
     }
   }
   await ctx.close();
@@ -64,10 +86,17 @@ await browser.close();
 if (bad.length) {
   console.log(`\n  ${bad.length} OVERFLOWING:`);
   for (const b of bad) {
-    console.log(`   ${String(b.width).padStart(3)}px ${b.at.padEnd(32)} scrollWidth ${b.scrollW} > ${b.clientW}`);
-    if (b.worst) console.log(`        widest: <${b.worst.tag} class="${b.worst.cls}"> right edge ${b.worst.right}`);
+    const clipped = b.scrollW <= b.clientW + 1;
+    console.log(
+      `   ${String(b.width).padStart(3)}px ${b.at.padEnd(32)} ${
+        clipped ? 'CLIPPED (no scrollbar — silent)' : `scrolls sideways ${b.scrollW} > ${b.clientW}`
+      }`
+    );
+    if (b.worst) console.log(`        widest element: ${b.worst.w}px  <${b.worst.tag} class="${b.worst.cls}">`);
   }
   process.exitCode = 1;
 } else {
-  console.log(`\n  no horizontal overflow — ${checked} route/width combinations at ${WIDTHS.join(', ')}px`);
+  console.log(
+    `\n  no horizontal overflow, clipped or scrolling — ${checked} route/width combinations at ${WIDTHS.join(', ')}px`
+  );
 }

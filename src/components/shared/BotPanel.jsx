@@ -37,8 +37,18 @@ export default function BotPanel({ bot, brandKey, enabled = true, tone = 'surfac
   const initial = (bot.name || 'M').charAt(0);
 
   return (
-    <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-16">
-      <Reveal>
+    /**
+     * `min-w-0` on the grid AND on both children is load-bearing, not tidiness.
+     *
+     * A grid track defaults to `minmax(auto, ...)`, and `auto` as a minimum
+     * means MIN-CONTENT. One nowrap string anywhere inside — the status line
+     * below was the culprit — sets the min-content width of the whole track,
+     * and the track then grows past the viewport. Because the page frame is
+     * `overflow: hidden`, that does not produce a scrollbar. It silently CLIPS,
+     * so the card loses its left and right edges and nothing reports an error.
+     */
+    <div className="grid min-w-0 items-start gap-10 lg:items-center lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-16">
+      <Reveal className="min-w-0">
         <Eyebrow tone={deep ? 'deep' : 'ink'}>{s.eyebrow}</Eyebrow>
         <H2 className="mt-4">{s.heading}</H2>
         {s.body ? (
@@ -63,27 +73,31 @@ export default function BotPanel({ bot, brandKey, enabled = true, tone = 'surfac
         ) : null}
       </Reveal>
 
-      <Reveal delay={90}>
+      <Reveal delay={90} className="min-w-0">
         <div
-          className={`overflow-hidden rounded-frame border shadow-[0_20px_50px_-24px_rgba(26,29,31,.45)] ${
+          className={`min-w-0 overflow-hidden rounded-frame border shadow-[0_20px_50px_-24px_rgba(26,29,31,.45)] ${
             deep ? 'border-white/15 bg-white/[0.06]' : 'border-line bg-wash'
           }`}
         >
-          <div className={`flex items-center gap-3 border-b px-5 py-4 ${deep ? 'border-white/10' : 'border-line'}`}>
+          <div className={`flex min-w-0 items-center gap-3 border-b px-4 py-3.5 sm:px-5 sm:py-4 ${deep ? 'border-white/10' : 'border-line'}`}>
             <span
               aria-hidden="true"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent font-display text-base font-bold text-ink"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent font-display text-base font-bold text-ink sm:h-10 sm:w-10"
             >
               {initial}
             </span>
-            <span className="min-w-0">
-              <span className="block truncate font-display text-base font-semibold">{bot.name}</span>
-              <span className="flex items-center gap-1.5 text-xs opacity-75">
-                <span aria-hidden="true" className="relative flex h-2 w-2 shrink-0">
+            <span className="min-w-0 flex-1">
+              <span className="block truncate font-display text-[15px] font-semibold sm:text-base">{bot.name}</span>
+              {/* This line WRAPS on a phone rather than truncating. It was the
+                  source of the min-content blowout, and "Agent Kidd front desk ·
+                  Live · answers in seconds" ending in "answers in second" is a
+                  worse read than two short lines. */}
+              <span className="flex min-w-0 items-start gap-1.5 text-[11px] leading-snug opacity-75 sm:items-center sm:text-xs">
+                <span aria-hidden="true" className="relative mt-[5px] flex h-2 w-2 shrink-0 sm:mt-0">
                   <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-70 motion-safe:animate-ping" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
                 </span>
-                <span className="truncate">
+                <span className="min-w-0">
                   {s.statusLabel ? `${s.statusLabel} · ` : ''}
                   {bot.statusLine}
                 </span>
