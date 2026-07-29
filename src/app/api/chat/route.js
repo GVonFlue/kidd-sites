@@ -125,7 +125,10 @@ const CAPTURE_TOOL = {
   name: 'capture_lead',
   description:
     'Record a visitor\'s contact details so Justus can follow up, and optionally request an appointment time. ' +
-    'Call this as soon as you have a name AND at least one of email or phone. ' +
+    'DO NOT call this early. Help them first. It is only appropriate once EITHER the visitor has asked to be ' +
+    'contacted, booked, called, texted or sent something, OR you have already given them at least two ' +
+    'substantive, useful answers and they are still engaged. ' +
+    'Requires a name AND at least one of email or phone. ' +
     'Do not call it twice in one conversation. Do not call it with placeholder or invented values.',
   input_schema: {
     type: 'object',
@@ -153,6 +156,45 @@ const SOURCE_LABEL = {
   agent: 'Agent Kidd - Mason chat',
   cornerstone: 'Cornerstone - Mason chat',
 };
+
+/**
+ * Has the visitor actually asked to be contacted? Then capture is welcome at any
+ * point and gating it would be obstructive.
+ */
+const ASKED_FOR_CONTACT =
+  /\b(call me|text me|email me|contact me|reach me|get in touch|book|booking|schedule|appointment|set up a time|meet|come see|send (me|it)|sign me up|talk to (justus|someone|a person|him)|speak to)\b/i;
+
+/**
+ * THE VALUE GATE.
+ *
+ * The prompt tells Mason to help before he asks. This enforces it, because a
+ * prompt is a preference and a visitor who gets asked for their phone number in
+ * the first reply closes the tab. A bot that trades an answer for a contact
+ * detail on turn one is a form with extra steps, and the entire premise of the
+ * panel is "no form, no pressure".
+ *
+ * Two ways through:
+ *   - the visitor asked to be contacted, booked or sent something, or
+ *   - Mason has already given at least two substantive answers.
+ *
+ * When it blocks, it tells the model exactly what to do instead, so the visitor
+ * never sees a stall.
+ */
+function tooEarly(messages) {
+  const asked = messages.some((m) => m.role === 'user' && ASKED_FOR_CONTACT.test(m.content));
+  if (asked) return null;
+
+  // A greeting is not an answer. Count only replies with real substance.
+  const substantive = messages.filter((m) => m.role === 'assistant' && m.content.trim().length > 120).length;
+  if (substantive >= 2) return null;
+
+  return (
+    'TOO EARLY. You have given this person ' + substantive + ' substantive answer(s) and they have not asked ' +
+    'to be contacted. Do not ask for their details yet. Answer what they asked properly, then offer them ' +
+    'something useful they did not think to ask for. Ask a question about their situation. Only take details ' +
+    'once you have actually helped, or once they ask you to.'
+  );
+}
 
 async function runCapture(brandKey, input, sessionId) {
   const b = getBrand(brandKey);
@@ -298,7 +340,10 @@ export async function POST(request) {
         });
       }
 
-      const result = await runCapture(brandKey, toolUse.input || {}, sessionId);
+      const early = tooEarly(convo);
+      const result = early
+        ? { ok: false, message: early }
+        : await runCapture(brandKey, toolUse.input || {}, sessionId);
       captured = captured || result.ok === true;
 
       convo = [

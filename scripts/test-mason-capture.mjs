@@ -53,7 +53,36 @@ check('lead also pushed to the CRM', dump.crm.length > 0, `${dump.crm.length} ro
 const claimsBooked = /\b(booked|confirmed|scheduled|you're all set|you are all set|on the calendar|reserved|locked in)\b/i.test(json.reply || '');
 check('never claims the appointment is booked', !claimsBooked, json.reply);
 
-// A capture with no way to reach the person must be refused.
+// ── THE VALUE GATE. A cold opener with no request to be contacted, and no
+// prior answers, must NOT produce a captured lead however eager the model is.
+await fetch('http://localhost:4001/reset', { method: 'POST' });
+const early = await fetch('http://localhost:3000/api/chat', {
+  method: 'POST', headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    brand: 'agent', sessionId: 'test-gate-1',
+    messages: [{ role: 'user', content: 'what is a good time of year to buy?' }],
+  }),
+});
+const earlyJson = await early.json();
+const earlyDump = await (await fetch('http://localhost:4001/dump')).json();
+check('cold opener does not capture', earlyDump.sheet.length === 0, `${earlyDump.sheet.length} row(s)`);
+check('cold opener still gets an answer', Boolean(earlyJson.reply), String(earlyJson.reply || '').slice(0, 50));
+check('cold opener not reported as captured', earlyJson.captured !== true, `captured=${earlyJson.captured}`);
+
+// ── Same cold opener, but the visitor ASKED to be contacted. Now it must pass:
+// gating someone who said "call me" is obstruction, not restraint.
+await fetch('http://localhost:4001/reset', { method: 'POST' });
+const asked = await fetch('http://localhost:3000/api/chat', {
+  method: 'POST', headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    brand: 'agent', sessionId: 'test-gate-2',
+    messages: [{ role: 'user', content: 'Can Justus call me? Dana Reed, 316-555-0134.' }],
+  }),
+});
+await asked.json();
+const askedDump = await (await fetch('http://localhost:4001/dump')).json();
+check('an explicit "call me" is captured immediately', askedDump.sheet.length === 1, `${askedDump.sheet.length} row(s)`);
+
 const bad = await fetch('http://localhost:3000/api/chat', {
   method: 'POST', headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ brand: 'cornerstone', sessionId: 'test-capture-2', messages: [{ role: 'user', content: 'hello' }] }),
