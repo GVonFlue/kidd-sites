@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent Kidd + Cornerstone — V1 sit-down</title>
+<style>
+  :root{
+    --ink:#1A1D1F; --deep:#16191B; --wash:#F2F3F3; --line:#DCDEDF;
+    --accent:#C2832A; --accent-ink:#8A5C13; --accent-lift:#D9A648;
+    --ok:#1F6B3F; --warn:#8A3A1F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:var(--ink);background:#E9EBEC}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 16px 120px}
+
+  header{position:sticky;top:0;z-index:30;background:var(--deep);color:#fff;margin:0 -16px 22px;padding:14px 22px;
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;box-shadow:0 8px 24px -14px rgba(0,0,0,.5)}
+  header h1{font-size:17px;font-weight:700;letter-spacing:-.01em}
+  header .sub{font-size:12px;color:#9AA0A4;letter-spacing:.08em;text-transform:uppercase}
+  .count{margin-left:auto;font-variant-numeric:tabular-nums;font-size:13px;color:#C9CDCF}
+  .count b{color:var(--accent-lift)}
+  .btn{border:0;border-radius:999px;padding:9px 16px;font:600 13px/1 inherit;cursor:pointer}
+  .btn.p{background:var(--accent);color:var(--ink)}
+  .btn.g{background:rgba(255,255,255,.12);color:#fff}
+
+  h2{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink);margin:34px 0 12px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:12px}
+  .card h3{font-size:16px;font-weight:700;letter-spacing:-.01em;margin-bottom:2px}
+  .card .url{font:12px/1.4 ui-monospace,monospace;color:#6B7175;margin-bottom:12px}
+  .card .url a{color:var(--accent-ink)}
+
+  .item{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line)}
+  .item:first-of-type{border-top:0}
+  .item .q{flex:1;min-width:0;font-size:14.5px}
+  .item .q small{display:block;color:#6B7175;font-size:12.5px;margin-top:2px}
+  .seg{display:flex;gap:4px;flex:0 0 auto}
+  .seg button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 11px;font:600 12px/1 inherit;cursor:pointer;color:#6B7175}
+  .seg button[data-on="ok"]{background:#E9F3ED;border-color:#BFD9CA;color:var(--ok)}
+  .seg button[data-on="chg"]{background:#FAEDE7;border-color:#E7C6B6;color:var(--warn)}
+  textarea,input[type=text]{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font:14px/1.45 inherit;background:#fff;resize:vertical}
+  textarea{min-height:44px;margin-top:8px;display:none}
+  textarea.show{display:block}
+
+  .ask .item{align-items:center}
+  .ask label{flex:0 0 235px;font-size:14px;font-weight:600}
+  .ask .why{flex:0 0 100%;font-size:12.5px;color:#6B7175;margin:-4px 0 6px 0}
+  .pill{display:inline-block;font:600 10px/1 inherit;letter-spacing:.09em;text-transform:uppercase;
+    padding:4px 8px;border-radius:999px;vertical-align:2px;margin-left:8px}
+  .pill.block{background:#FAEDE7;color:var(--warn)}
+  .pill.soon{background:#FDF3E2;color:var(--accent-ink)}
+  .pill.nice{background:var(--wash);color:#6B7175}
+
+  .known{background:var(--wash);border-left:3px solid var(--accent)}
+  .known li{margin:7px 0 7px 18px;font-size:14px}
+  .known li b{font-weight:600}
+
+  .out{position:fixed;left:0;right:0;bottom:0;background:var(--deep);color:#D5D8DA;z-index:40;
+    max-height:52vh;display:flex;flex-direction:column;transform:translateY(calc(100% - 44px));transition:transform .2s}
+  .out.open{transform:none}
+  .out .bar{display:flex;align-items:center;gap:12px;padding:0 18px;height:44px;cursor:pointer;flex:0 0 auto}
+  .out .bar b{font-size:13px;color:#fff}
+  .out .bar span{font-size:12px;color:#9AA0A4}
+  .out pre{flex:1;overflow:auto;margin:0;padding:0 18px 18px;font:12px/1.55 ui-monospace,monospace;white-space:pre-wrap;color:#C9CDCF}
+  @media print{ .out,header .btn{display:none} header{position:static} textarea{display:block} }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="sub">ProyTech · V1 delivery</div>
+    <h1>Agent Kidd + Cornerstone — sit-down with Justus</h1>
+  </div>
+  <div class="count"><b id="done">0</b> / <span id="total">0</span> walked · <b id="chg">0</b> changes</div>
+  <button class="btn p" onclick="copyOut()">Copy the list</button>
+  <button class="btn g" onclick="window.print()">Print</button>
+</header>
+
+<div class="wrap">
+
+  <h2>How to run this — 90 minutes</h2>
+  <div class="card">
+    <div class="item"><div class="q"><b>1. Before he arrives (10 min).</b>
+      <small>Open <code>kidd-sites.vercel.app/?brand=agent</code> and <code>?brand=cornerstone</code> in two tabs, plus this checklist in a third. Have your phone out — half the review has to happen on a phone, because that is where his buyers are.</small></div></div>
+    <div class="item"><div class="q"><b>2. Do not start with the website (5 min).</b>
+      <small>Start with the ASK LIST below and get every credential and fact first. If you leave it to the end you will run out of time, and those are the only things that actually block launch. The design opinions are not blocking; they are a punch list.</small></div></div>
+    <div class="item"><div class="q"><b>3. Walk it in his order, not ours (45 min).</b>
+      <small>Screen-share and scroll. For each section press KEEP or CHANGE. Only type when he says something specific — the note field appears when you press CHANGE. Do not debate anything in the room; capture it and move on. Arguing costs more meeting time than any single change is worth.</small></div></div>
+    <div class="item"><div class="q"><b>4. Close with the three decisions (10 min).</b>
+      <small>Launch date, which email leads go to, and whether he wants the buyer guide going out automatically on day one.</small></div></div>
+    <div class="item"><div class="q"><b>5. Press "Copy the list" and send it to me.</b>
+      <small>It comes out as a clean punch list. Nothing is saved if you refresh this page, so copy it before you close the tab.</small></div></div>
+  </div>
+
+  <h2>Get from Justus — do this first</h2>
+  <div class="card ask" id="ask"></div>
+
+  <h2>Already found — do not spend meeting time on these</h2>
+  <div class="card known">
+    <p style="font-size:14px;margin-bottom:8px">Found in the scrub. They are on my list either way, so if he raises one you can say it is already being fixed.</p>
+    <ul>
+      <li><b>Two brass buttons in one screenful</b> on <code>/buy</code>, <code>/contact</code>, Cornerstone <code>/commercial</code> and Cornerstone <code>/contact</code>. On <code>/buy</code> and <code>/commercial</code> it is literally the same offer twice — the form's submit and the closing block below it.</li>
+      <li><b>No 404 page.</b> A mistyped URL currently shows the framework default with no branding and no way back.</li>
+      <li><b>No calendar anywhere</b>, so Mason can take a requested time but nothing can be confirmed. Blocked on his booking link.</li>
+      <li><b>Cornerstone has no photography.</b> The home page has a slot for photos of properties actually managed and it is empty.</li>
+      <li><b>Commercial page is thin</b> — no square footage, location or rate, because none was ever supplied.</li>
+      <li><b>The site says "I" a lot.</b> 189 you/your against 145 I/me/my. Fine for a personal brand, worth a conscious decision on Cornerstone where it should be "we".</li>
+      <li><b>Loss aversion is missing</b> on nine routes — the cost of waiting is only stated where the arithmetic already existed.</li>
+    </ul>
+  </div>
+
+  <h2>Walk the site</h2>
+  <div id="walk"></div>
+
+  <h2>The three decisions</h2>
+  <div class="card" id="decide"></div>
+
+</div>
+
+<div class="out" id="out">
+  <div class="bar" onclick="document.getElementById('out').classList.toggle('open')">
+    <b>The punch list</b><span>tap to open · updates as you go</span>
+    <span style="margin-left:auto" id="outn"></span>
+  </div>
+  <pre id="outpre"></pre>
+</div>
+
+<script>
+/* ── Everything lives in memory. No storage, so do not refresh mid-meeting. ── */
+const ASK = [
+  ['DNS access', 'block', 'Registrar login for agentkidd.com AND cornerstonemgmt.co, or him on a call with whoever holds it. Without this nothing goes live, and it is the single most common reason a launch slips a week.'],
+  ['Who owns each domain', 'block', 'Confirm both are actually his and not with a past marketer. Check the renewal dates while you are in there.'],
+  ['AppFolio login, or 3 URLs', 'block', 'Public listings page, resident portal, owner portal. Three URLs read off the live AppFolio site is all it takes — no code, no API request. The portal buttons stay hidden until they exist.'],
+  ['Booking / calendar link', 'block', 'Calendly, Google Calendar appointment page, whatever he uses. This is what turns Mason from taking a requested time into actually booking one.'],
+  ['Lofty API key', 'soon', 'Lofty > Settings > Integrations > API. Until it lands, leads go to the Sheet and to his inbox only.'],
+  ['Logo files, both brands', 'soon', 'SVG if it exists, otherwise the largest PNG he has. The nav currently uses a text wordmark.'],
+  ['A photograph of Wichita', 'soon', 'For the Cornerstone hero. It has to be licensed or his own — a skyline pulled off a search result is a licensing problem, not a design choice. Options: a shot he already owns, a local photographer for a couple of hundred dollars, or a paid licence. Landscape, at least 2400px wide, ideally dusk. The hero is already built to take it and the scrim holds contrast over any image.'],
+  ['Photos of managed properties', 'soon', 'Cornerstone has zero photography. Phone photos of real doors beat stock, and he explicitly does not want stock.'],
+  ['3rd maintenance screening question', 'soon', 'Two were named on the discovery call, the third never was. Mason has an explicit hole where it goes.'],
+  ['Commercial space specifics', 'soon', 'Square footage, location, asking rate, what it suits. The page cannot be convincing without them.'],
+  ['REALTOR® / NAR membership', 'block', 'The mark is on the site and in the buyer guide. It is only usable with current membership. Confirm out loud.'],
+  ['IDX / MLS disclaimer', 'block', 'Ask Real Broker or SCK MLS what disclaimer is required if any listing data appears. Compliance, not design.'],
+  ['Cornerstone PM licence', 'nice', 'If Kansas requires one for property management, it belongs in the footer.'],
+  ['Google Business Profile URLs', 'nice', 'Both brands. Feeds reviews and the map listing.'],
+  ['The 7th Google review', 'nice', 'His form said seven; six were recovered from the live site. Ask if the seventh is worth chasing.'],
+  ['Tagline for each brand', 'nice', 'Both are empty. Optional, but if he has one in his head it should be his words.'],
+  ['Buyer guide: vendors', 'soon', 'Lender, inspector, insurance agent, title company, and the trades. The guide has blank fields waiting and nothing is invented.'],
+  ['Buyer guide: confirm the numbers', 'soon', 'Inspection, appraisal, moving and utility figures are drafting ballparks. He needs to confirm them against what he actually sees before it goes to a buyer.'],
+  ['Words he never wants used', 'nice', 'He gave three on the last pass and said there would be more. Ask again now that he has seen the bot talk.'],
+];
+
+const WALK = [
+  ['Global', '', [
+    ['The top bar', 'Order of the links, the phone, and the Book a call button. Anything missing from the nav?'],
+    ['The footer', 'Licence number, brokerage, address, equal housing, social links. All correct?'],
+    ['Mason, the assistant', 'Have him type at it for two minutes. Tone, pacing, whether it sounds like his front desk.'],
+    ['On his phone', 'Hand him your phone. Everything above is different on a 390px screen and that is where his buyers are.'],
+  ]],
+  ['Agent Kidd', 'agent', [
+    ['Home — the hero claim', '"Most agents sell houses. I also manage five hundred of them." Is that the line he wants leading with?'],
+    ['Home — his photo', 'Size, crop, whether he wants a different shot.'],
+    ['Home — the numbers', '500+ doors, 1,000+ residents, 7 associations, 4 years. Still accurate?'],
+    ['Home — the two doors', 'Buying / selling / investing split. Right order for him?'],
+    ['Home — the buyer guide form', 'What it promises, and whether he will actually send it.'],
+    ['Home — the Cornerstone block', 'How hard to push the other brand from here.'],
+    ['Home — testimonials', 'Five are published. Confirm he is happy with every one being public.'],
+    ['/buy', 'The whole page. Does it match how he actually works with a buyer?'],
+    ['/sell', 'The valuation offer is the main door here. Is a free valuation what he wants to lead with?'],
+    ['/investors', 'This is his real edge. Does the page say enough about the management side?'],
+    ['/about', 'His story, in his words. Read it out loud to him.'],
+    ['/reviews', 'Layout and which reviews lead.'],
+    ['/contact', 'Which line rings, what the form asks for.'],
+  ]],
+  ['Cornerstone', 'cornerstone', [
+    ['Home — owners first', 'The page leads to owners, not renters. Confirm that is what he wants.'],
+    ['Home — pick your door', 'Owner / resident / board / investor. Right four?'],
+    ['/property-management', 'The vacant-month arithmetic is the spine of this page. Are the numbers his?'],
+    ['/hoa', 'Built value-first with the ask at the bottom, per his no-pitching rule. Still right?'],
+    ['/commercial', 'Thin until he gives specifics. Ask for them here.'],
+    ['/owners', 'What an existing owner needs the moment they land.'],
+    ['/availability', 'Where the AppFolio listings and portals will drop in.'],
+    ['/about', 'Cornerstone as a company, not as him.'],
+    ['/contact', 'Two lines, leasing and sales. Correct split?'],
+  ]],
+];
+
+const DECIDE = [
+  ['Launch date', 'Pick a day. DNS takes up to 24 hours to settle, so the cutover happens the day before.'],
+  ['Where leads go', 'One email address. It can be more than one, but he has to name them.'],
+  ['Buyer guide on day one?', 'Yes means he confirms the numbers and vendors this week. No means the form still works and he sends it by hand.'],
+];
+
+const state = {};
+let n = 0;
+
+function row(host, key, label, sub, kinds) {
+  const id = 'i' + (n++);
+  state[id] = { host, label, status: '', note: '' };
+  return `<div class="item">
+    <div class="q">${label}${sub ? `<small>${sub}</small>` : ''}
+      <textarea id="t${id}" placeholder="What did he say? Be specific." oninput="note('${id}',this.value)"></textarea>
+    </div>
+    <div class="seg">
+      <button id="ok${id}" onclick="set('${id}','ok')">Keep</button>
+      <button id="chg${id}" onclick="set('${id}','chg')">Change</button>
+    </div>
+  </div>`;
+}
+
+document.getElementById('ask').innerHTML = ASK.map(([label, tier, why]) => {
+  const id = 'a' + (n++);
+  state[id] = { host: 'ASK', label, tier, status: '', note: '' };
+  const pill = `<span class="pill ${tier}">${tier === 'block' ? 'blocks launch' : tier === 'soon' ? 'needed for V1' : 'nice to have'}</span>`;
+  return `<div class="item" style="flex-wrap:wrap">
+    <label>${label}${pill}</label>
+    <input type="text" placeholder="Write it down here" oninput="note('${id}',this.value);set('${id}','ok',1)" style="flex:1;min-width:220px">
+    <div class="why">${why}</div>
+  </div>`;
+}).join('');
+
+document.getElementById('walk').innerHTML = WALK.map(([group, brand, items]) => `
+  <div class="card">
+    <h3>${group}</h3>
+    ${brand ? `<div class="url"><a href="https://kidd-sites.vercel.app/?brand=${brand}" target="_blank">kidd-sites.vercel.app/?brand=${brand}</a></div>` : '<div class="url">Every page</div>'}
+    ${items.map(([label, sub]) => row(group, null, label, sub)).join('')}
+  </div>`).join('');
+
+document.getElementById('decide').innerHTML = DECIDE.map(([label, sub]) => {
+  const id = 'd' + (n++);
+  state[id] = { host: 'DECISION', label, status: '', note: '' };
+  return `<div class="item"><div class="q">${label}<small>${sub}</small>
+    <textarea class="show" placeholder="His answer" oninput="note('${id}',this.value);set('${id}','ok',1)"></textarea></div></div>`;
+}).join('');
+
+function set(id, v, quiet) {
+  const s = state[id];
+  s.status = s.status === v && !quiet ? '' : v;
+  const ok = document.getElementById('ok' + id), ch = document.getElementById('chg' + id);
+  if (ok) ok.dataset.on = s.status === 'ok' ? 'ok' : '';
+  if (ch) ch.dataset.on = s.status === 'chg' ? 'chg' : '';
+  const t = document.getElementById('t' + id);
+  if (t) t.classList.toggle('show', s.status === 'chg' || !!s.note);
+  render();
+}
+function note(id, v) { state[id].note = v; render(); }
+
+function render() {
+  const all = Object.values(state);
+  const walked = all.filter((s) => s.host !== 'ASK' && s.host !== 'DECISION');
+  document.getElementById('done').textContent = walked.filter((s) => s.status).length;
+  document.getElementById('total').textContent = walked.length;
+  document.getElementById('chg').textContent = all.filter((s) => s.status === 'chg').length;
+  document.getElementById('outpre').textContent = build();
+  document.getElementById('outn').textContent = all.filter((s) => s.status === 'chg' || s.note).length + ' captured';
+}
+
+function build() {
+  const L = [];
+  const all = Object.entries(state).map(([, s]) => s);
+  L.push('AGENT KIDD + CORNERSTONE — V1 sit-down', '');
+
+  const asks = all.filter((s) => s.host === 'ASK');
+  L.push('## GOT FROM JUSTUS');
+  asks.filter((s) => s.note).forEach((s) => L.push(`- ${s.label}: ${s.note}`));
+  const missing = asks.filter((s) => !s.note && s.tier !== 'nice');
+  if (missing.length) {
+    L.push('', '## STILL MISSING');
+    missing.forEach((s) => L.push(`- ${s.label}${s.tier === 'block' ? '   <-- BLOCKS LAUNCH' : ''}`));
+  }
+
+  const changes = all.filter((s) => s.status === 'chg');
+  L.push('', `## CHANGES HE WANTS (${changes.length})`);
+  changes.forEach((s) => L.push(`- [${s.host}] ${s.label}${s.note ? ' — ' + s.note : ' — (no detail captured)'}`));
+
+  const decisions = all.filter((s) => s.host === 'DECISION' && s.note);
+  if (decisions.length) {
+    L.push('', '## DECISIONS');
+    decisions.forEach((s) => L.push(`- ${s.label}: ${s.note}`));
+  }
+
+  const untouched = all.filter((s) => s.host !== 'ASK' && s.host !== 'DECISION' && !s.status);
+  if (untouched.length) {
+    L.push('', `## NOT WALKED (${untouched.length}) — go back to these`);
+    untouched.forEach((s) => L.push(`- [${s.host}] ${s.label}`));
+  }
+  return L.join('\n');
+}
+
+function copyOut() {
+  const t = document.createElement('textarea');
+  t.value = build();
+  document.body.appendChild(t); t.select();
+  document.execCommand('copy');
+  document.body.removeChild(t);
+  document.getElementById('out').classList.add('open');
+  alert('Punch list copied. Paste it straight back to me.');
+}
+render();
+</script>
+</body>
+</html>
