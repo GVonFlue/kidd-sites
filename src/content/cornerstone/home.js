@@ -21,6 +21,14 @@
 export const home = {
   hero: {
     eyebrow: 'Wichita and south central Kansas',
+    // A photograph of Wichita, behind the hero. Client-supplied only: there is
+    // no stock fallback anywhere on this build, and a city skyline pulled off a
+    // search result is a licensing problem, not a design choice.
+    //
+    // Drop the file at public/cornerstone/wichita.jpg and uncomment. The scrim
+    // in Hero.jsx is built to hold AA contrast over any image, so no other
+    // change is needed.
+    // backdrop: { src: '/cornerstone/wichita.jpg', position: 'center 40%' },
     heading:
       'We manage five hundred doors in Wichita, including the programs most companies will not take on.',
     body:
@@ -98,7 +106,10 @@ export const home = {
     heading: 'Justus Kidd, licensed agent',
     body:
       'Cornerstone is run by a licensed Kansas agent, which is unusual and it matters. When an owner decides to sell, when a board member is moving, or when a resident is ready to buy their first home, that does not have to become somebody else’s transaction handled by somebody who does not know the property.',
-    image: { src: '/cornerstone/justus-portrait.jpg', alt: 'Justus Kidd' },
+    // The same studio cutout the Agent Kidd hero uses. One photograph of him
+    // across both brands: a visitor who crosses from one site to the other
+    // should recognise the same person, not meet him twice.
+    image: { cutout: '/cornerstone/justus-cutout.png', alt: 'Justus Kidd' },
     cta: { label: 'Meet Justus', href: 'https://agentkidd.com/about' },
   },
 

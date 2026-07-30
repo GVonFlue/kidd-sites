@@ -39,10 +39,50 @@ export default function Hero({ hero, tone = 'light', seed = 7 }) {
   const avatar = img.avatar || img.src;
   const framed = !cutout && img.src;
 
+  const backdrop = hero.backdrop?.src ? hero.backdrop : null;
+
   return (
     <section
       className={`relative overflow-hidden ${cutout ? 'lg:overflow-visible' : ''} ${ground}`}
     >
+      {/* Plane 0 — a photograph of the city, behind everything.
+          Renders only when one has been supplied; there is no stock fallback.
+
+          THE SCRIM IS NOT DECORATION. Type sits on top of this, and the
+          photograph is not known at build time, so the gradient is sized to hold
+          WCAG AA even if the image underneath is pure white: it is effectively
+          opaque behind the headline and only opens up past the text column.
+          Never lighten the left-hand stops to "let more photo through" without
+          re-running the contrast audit. */}
+      {backdrop ? (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+          <Image
+            src={backdrop.src}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+            style={{ objectPosition: backdrop.position || 'center 35%' }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: deep
+                ? 'linear-gradient(100deg, rgba(22,25,27,.97) 0%, rgba(22,25,27,.95) 42%, rgba(22,25,27,.72) 68%, rgba(22,25,27,.46) 100%)'
+                : 'linear-gradient(100deg, rgba(255,255,255,.97) 0%, rgba(255,255,255,.95) 42%, rgba(255,255,255,.74) 68%, rgba(255,255,255,.5) 100%)',
+            }}
+          />
+          <div
+            className="absolute inset-x-0 bottom-0 h-1/3"
+            style={{
+              background: deep
+                ? 'linear-gradient(to top, rgba(22,25,27,.9), rgba(22,25,27,0))'
+                : 'linear-gradient(to top, rgba(255,255,255,.9), rgba(255,255,255,0))',
+            }}
+          />
+        </div>
+      ) : null}
       {/* Plane 1 — the parcel grid. Own clipping wrapper so the section itself
           can stay unclipped for the figure. */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">

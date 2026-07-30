@@ -24,8 +24,41 @@ export default function CrossBrand({ block, tone = 'deep' }) {
         </div>
       </div>
       {/* A real photograph of Justus. No stock imagery anywhere on this build.
-          Explicit dimensions through next/image, so there is no layout shift. */}
-      {block.image?.src ? (
+          Explicit dimensions through next/image, so there is no layout shift.
+
+          `cutout` is the background-free studio PNG, the same asset as the
+          Agent Kidd hero. On the deep ground it needs no card: he stands
+          directly on it, which is both better looking and consistent with the
+          other site. The bottom of the cutout is a hard cut across the chest, so
+          it is faded out with a mask rather than left to end mid-air. */}
+      {/* The width below is DEFINITE, not w-full. The grid column is `auto`, so
+          a percentage width there resolves against nothing, the figure collapses
+          to zero, and the photograph silently vanishes on desktop. */}
+      {block.image?.cutout ? (
+        <div className="relative w-[210px] justify-self-center sm:w-[250px] md:w-[290px] md:justify-self-end">
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-[-14%] bottom-[-4%] top-[18%] rounded-[50%]"
+            style={{
+              background: deep
+                ? 'radial-gradient(closest-side, rgba(217,166,72,.16), rgba(217,166,72,.04) 62%, rgba(217,166,72,0) 100%)'
+                : 'radial-gradient(closest-side, rgba(194,131,42,.14), rgba(194,131,42,.04) 62%, rgba(194,131,42,0) 100%)',
+            }}
+          />
+          <Image
+            src={block.image.cutout}
+            alt={block.image.alt}
+            width={960}
+            height={960}
+            sizes="(max-width: 768px) 60vw, 280px"
+            className="relative block h-auto w-full select-none"
+            style={{
+              maskImage: 'linear-gradient(to bottom, #000 88%, transparent 99%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, #000 88%, transparent 99%)',
+            }}
+          />
+        </div>
+      ) : block.image?.src ? (
         <Image
           src={block.image.src}
           alt={block.image.alt}

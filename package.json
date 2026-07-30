@@ -25,7 +25,8 @@
     "test:overflow": "node scripts/test-overflow.mjs",
     "audit:conversion": "node scripts/audit-conversion.mjs",
     "test:mason": "node scripts/test-mason-capture.mjs",
-    "test:sheet": "node scripts/test-sheet-columns.mjs"
+    "test:sheet": "node scripts/test-sheet-columns.mjs",
+    "test:backdrop": "node scripts/test-hero-backdrop.mjs"
   },
   "author": "",
   "license": "ISC",

@@ -94,8 +94,10 @@ export const brand = {
 
   // Real photograph, from the client folder in Drive. No stock imagery anywhere.
   photos: {
-    portrait: '/agent/justus-portrait.jpg',
-    square: '/agent/justus-square.jpg',
+    // Studio shot, on the site's own wash ground. `square` is what goes into the
+    // JSON-LD Person node, so it is the image Google may show next to him.
+    portrait: '/agent/justus-studio-portrait.jpg',
+    square: '/agent/justus-studio-square.jpg',
     alt: 'Justus Kidd',
   },
 

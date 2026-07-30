@@ -117,8 +117,10 @@ export const brand = {
   },
 
   photos: {
-    portrait: '/cornerstone/justus-portrait.jpg',
-    square: '/cornerstone/justus-square.jpg',
+    // Studio shot, on the site's own wash ground. `square` is what goes into the
+    // JSON-LD Person node, so it is the image Google may show next to him.
+    portrait: '/cornerstone/justus-studio-portrait.jpg',
+    square: '/cornerstone/justus-studio-square.jpg',
     alt: 'Justus Kidd',
   },
 
