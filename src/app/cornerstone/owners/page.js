@@ -19,7 +19,7 @@ export default function Page() {
       {/* The portal is the first thing an existing owner came here for.
           Renders only once the AppFolio URLs are in config. */}
       <div className="mb-12">
-        <PortalBar portals={brand.external.portals} />
+        <PortalBar portals={brand.external.portals} only={['owner']} heading={owners.portalHelp.portalHeading} />
       </div>
       <H2>{owners.portalHelp.heading}</H2>
       <ul className="mt-8 grid gap-4 md:grid-cols-2">

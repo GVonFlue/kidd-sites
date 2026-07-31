@@ -59,13 +59,29 @@ export const brand = {
     // Setting it lights up every "See available rentals" button on the build.
     searchHandoffUrl: null,
 
-    // Owner and resident portals are HOSTED BY APPFOLIO. Nothing is built here.
-    // Log in, copy the two portal URLs off the live site, paste them in, and the
-    // buttons appear. Until then PortalBar renders nothing, because a portal
-    // button that goes nowhere generates the support call it exists to prevent.
-    //   [{ label: 'Resident portal', url: '...', primary: true },
-    //    { label: 'Owner portal',    url: '...' }]
-    portals: [],
+    // Owner, resident and HOA portals are HOSTED BY APPFOLIO. Nothing is built
+    // here and nothing should be: an owner's statements and a resident's ledger
+    // live in AppFolio, and a second set of credentials on this site would be a
+    // liability with no upside.
+    //
+    // THE URLS ARE THE CLEAN ENTRY POINTS, not the raw links the client sent.
+    // What he pasted were fully-formed OAuth authorize URLs with an embedded
+    // client_id and an EMPTY `state` parameter — the address bar contents of a
+    // login he happened to be part-way through. Those are generated per attempt,
+    // and pinning one into the site risks the day AppFolio rotates the client or
+    // starts rejecting a blank state. Linking the portal root lets AppFolio build
+    // its own authorize request, which is what it does when anyone types the
+    // address. The subdomain below is taken straight out of his redirect_uri.
+    //
+    // RESIDENT AND HOA ARE THE SAME LOGIN. The two links he sent are byte for
+    // byte identical. AppFolio serves homeowners and tenants through one portal,
+    // so both labels point at the same place on purpose — a homeowner looking
+    // for "HOA" should not have to know it is called the resident portal.
+    portals: [
+      { key: 'resident', label: 'Resident portal', url: 'https://cornerstonemanagementks.appfolio.com/connect', primary: true },
+      { key: 'hoa',      label: 'HOA homeowner portal', url: 'https://cornerstonemanagementks.appfolio.com/connect' },
+      { key: 'owner',    label: 'Owner portal', url: 'https://cornerstonemanagementks.appfolio.com/oportal/users/log_in', primary: true },
+    ],
     booking: null,
     // Committed scope: replicate AppFolio listing publishing on the new site.
     // Blocked on a formal AppFolio API key request plus the client's login.

@@ -69,6 +69,12 @@ export const hoa = {
 
   // THE SMALL CREDENTIAL BLOCK. Deliberately short and factual, per the client's
   // hard constraint. Facts only, no adjectives, no case studies, no claims.
+  // Renders only when the AppFolio portal URLs are set in config.
+  portal: {
+    heading: 'Already a homeowner with us?',
+    note: 'Assessments, documents and your association\u2019s history are in the homeowner portal. It is the same login residents use, handled by our management system.',
+  },
+
   credentials: {
     heading: 'Prepared by',
     lines: [

@@ -94,6 +94,9 @@ export const owners = {
     secondaryCta: { label: 'Get a free rent analysis', href: '/property-management#analysis' },
   },
   portalHelp: {
+    // The button label above the list. Existing owners arrive here to log in,
+    // not to read about the portal, so the door comes before the description.
+    portalHeading: 'Already an owner? Sign in.',
     heading: 'What is in the portal',
     items: [
       'Statements, available whenever you want them rather than once a quarter',
@@ -144,9 +147,9 @@ export const availability = {
   },
   // Renders only when the AppFolio portal URLs are set in config.
   portals: {
-    heading: 'Residents and owners: your portal',
+    heading: 'Already with us? Sign in.',
     note:
-      'Rent, statements, documents and maintenance history live in the resident and owner portals. They are handled by our management system, so your login is the same one you already have.',
+      'Rent, documents, and your maintenance history live in the resident portal, and homeowners in an association we manage use the same login. It is handled by our management system, so your details are the ones you already have.',
   },
   closing: {
     heading: 'Questions before you apply?',

@@ -35,6 +35,7 @@ export default function Page() {
       <div className="mt-12">
         <PortalBar
           portals={brand.external.portals}
+          only={['resident', 'hoa']}
           heading={availability.portals.heading}
           note={availability.portals.note}
         />

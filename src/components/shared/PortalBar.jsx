@@ -15,8 +15,12 @@
  * lands on an error calls the office, which is the exact call this is meant to
  * prevent.
  */
-export default function PortalBar({ portals = [], tone = 'surface', heading, note }) {
-  if (!portals.length) return null;
+export default function PortalBar({ portals = [], only = null, tone = 'surface', heading, note }) {
+  // `only` picks the doors that belong on this page. A resident landing on the
+  // rentals page does not need the owner portal, and an owner does not need to
+  // scan past two logins that are not theirs.
+  const list = only ? portals.filter((p) => only.includes(p.key)) : portals;
+  if (!list.length) return null;
   const deep = tone === 'deep';
 
   return (
@@ -27,8 +31,8 @@ export default function PortalBar({ portals = [], tone = 'surface', heading, not
         </h2>
       ) : null}
       <ul className="mt-5 flex flex-wrap gap-3">
-        {portals.map((p) => (
-          <li key={p.url}>
+        {list.map((p) => (
+          <li key={p.key || p.url}>
             <a
               href={p.url}
               className={`inline-flex min-h-[48px] items-center gap-2 rounded-pill px-5 text-sm font-semibold transition-colors ${

@@ -1,4 +1,6 @@
 import { pageMetadata } from '@/lib/seo';
+import PortalBar from '@/components/shared/PortalBar';
+import { getBrand } from '@/config';
 import Hero from '@/components/shared/Hero';
 import Section from '@/components/shared/Section';
 import ItemList from '@/components/shared/ItemList';
@@ -11,6 +13,7 @@ import { forms } from '@/content/shared/forms';
 import { testimonials } from '@/content/shared/testimonials';
 
 export const metadata = pageMetadata('cornerstone', '/hoa');
+const brand = getBrand('cornerstone');
 
 /**
  * PAGE ORDER IS DELIBERATELY INVERTED against normal conversion practice.
@@ -35,8 +38,16 @@ export default function Page() {
     {/* 2. Plain facts. No adjectives about ourselves. */}
     <Section tone="wash"><ItemList {...hoa.what} columns={2} /></Section>
 
-    {/* 3. The small credential block. Two lines. */}
+    {/* 3. The small credential block. Two lines.
+        The homeowner portal sits here, quietly, ahead of it. A homeowner in an
+        association we already manage arrives on this page looking for a login,
+        not a pitch, and making them read the whole give-first argument first is
+        the same failure as burying it. It is a utility, not an ask, so it does
+        not violate the no-pitching constraint. */}
     <Section tone="surface">
+      <div className="mb-12">
+        <PortalBar portals={brand.external.portals} only={['hoa']} heading={hoa.portal?.heading} note={hoa.portal?.note} />
+      </div>
       <div className="max-w-prose border-l-2 border-line pl-6">
         <p className="font-mono text-xs uppercase tracking-[0.08em] text-ink/75">{hoa.credentials.heading}</p>
         {hoa.credentials.lines.map((l) => (
