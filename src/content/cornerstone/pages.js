@@ -90,13 +90,14 @@ export const owners = {
     eyebrow: 'Owners',
     heading: 'Your statements, your properties, your portal.',
     body: 'If you already own with us, everything is in the owner portal. If you are considering it, start with the rent analysis.',
-    primaryCta: { label: 'Owner portal', href: null }, // NEEDS: AppFolio owner portal URL
-    secondaryCta: { label: 'Get a free rent analysis', href: '/property-management#analysis' },
+    // The portal used to be the hero's primary button and sat empty waiting on
+    // a URL. It is its own block on the right now, so the brass button can go
+    // back to the give, which is what a prospective owner is here for.
+    primaryCta: { label: 'Get a free rent analysis', href: '/property-management#analysis' },
+    secondaryCta: { label: 'Call (316) 390-2120', href: 'tel:+13163902120' },
+    portals: { only: ['owner'], heading: 'Already an owner?' },
   },
   portalHelp: {
-    // The button label above the list. Existing owners arrive here to log in,
-    // not to read about the portal, so the door comes before the description.
-    portalHeading: 'Already an owner? Sign in.',
     heading: 'What is in the portal',
     items: [
       'Statements, available whenever you want them rather than once a quarter',
@@ -122,6 +123,8 @@ export const availability = {
     body:
       'Single family homes and apartments. Applications are handled through our resident system, so the apply button will take you there.',
     primaryCta: { label: 'See available rentals', href: null }, // NEEDS: AppFolio listing URL
+    // Sign-in, above the fold. Residents and HOA homeowners share one login.
+    portals: { only: ['resident', 'hoa'], heading: 'Already with us?' },
     secondaryCta: { label: 'Call leasing (316) 390-1009', href: 'tel:+13163901009' },
   },
   // Screening criteria stated factually and applied to every applicant equally.
@@ -146,11 +149,6 @@ export const availability = {
     ],
   },
   // Renders only when the AppFolio portal URLs are set in config.
-  portals: {
-    heading: 'Already with us? Sign in.',
-    note:
-      'Rent, documents, and your maintenance history live in the resident portal, and homeowners in an association we manage use the same login. It is handled by our management system, so your details are the ones you already have.',
-  },
   closing: {
     heading: 'Questions before you apply?',
     body: 'Leasing will answer them. So will the chat, and it does not put you on hold.',

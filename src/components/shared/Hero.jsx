@@ -4,6 +4,7 @@ import Parallax from './Parallax';
 import HeroPortrait from './HeroPortrait';
 import Button from './Button';
 import { Eyebrow } from './Section';
+import PortalBar from './PortalBar';
 
 /**
  * EYE PATH, in order:
@@ -28,7 +29,7 @@ import { Eyebrow } from './Section';
  * grid gets its own clipping wrapper instead, because it is scaled to 125% and
  * would otherwise spill.
  */
-export default function Hero({ hero, tone = 'light', seed = 7 }) {
+export default function Hero({ hero, tone = 'light', seed = 7, portals = [] }) {
   const deep = tone === 'deep';
   // 'wash' is the back plane used under the cutout: it gives the section that
   // follows a visible edge to pass in front of. Type colour is unchanged, so it
@@ -40,6 +41,13 @@ export default function Hero({ hero, tone = 'light', seed = 7 }) {
   const framed = !cutout && img.src;
 
   const backdrop = hero.backdrop?.src ? hero.backdrop : null;
+
+  // Sign-in belongs above the fold. An existing owner or resident did not come
+  // to read the pitch, and burying their login below it is the same failure as
+  // making them phone the office. It renders only when the portal URLs exist.
+  const signIn = hero.portals && portals.length
+    ? portals.filter((p) => !hero.portals.only || hero.portals.only.includes(p.key))
+    : [];
 
   return (
     <section
@@ -132,7 +140,7 @@ export default function Hero({ hero, tone = 'light', seed = 7 }) {
       {/* Plane 3 — the words. Always on top of both. */}
       <div
         className={`relative mx-auto grid max-w-6xl gap-10 px-5 pb-16 pt-14 md:pb-28 md:pt-20 lg:items-center lg:gap-16 ${
-          framed ? 'lg:grid-cols-[1fr_auto]' : ''
+          framed || signIn.length ? 'lg:grid-cols-[1fr_auto]' : ''
         }`}
       >
         <div className={cutout ? 'max-w-4xl lg:max-w-[560px] xl:max-w-[620px]' : 'max-w-4xl'}>
@@ -172,6 +180,20 @@ export default function Hero({ hero, tone = 'light', seed = 7 }) {
             </Button>
           </div>
         </div>
+
+        {signIn.length ? (
+          <div data-reveal className="lg:max-w-[300px] lg:justify-self-end lg:text-right">
+            <div className="lg:inline-block lg:text-left">
+              <PortalBar
+                portals={signIn}
+                tone={deep ? 'deep' : 'surface'}
+                quiet
+                heading={hero.portals.heading}
+                note={hero.portals.note}
+              />
+            </div>
+          </div>
+        ) : null}
 
         {framed ? (
           <Parallax speed={-0.06} className="hidden lg:block">

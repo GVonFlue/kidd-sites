@@ -7,7 +7,6 @@ import ClosingCta from '@/components/shared/ClosingCta';
 import { H2 } from '@/components/shared/Section';
 import { availability } from '@/content/cornerstone/pages';
 import { bot } from '@/content/cornerstone/bot';
-import PortalBar from '@/components/shared/PortalBar';
 import { getBrand } from '@/config';
 
 export const metadata = pageMetadata('cornerstone', '/availability');
@@ -15,7 +14,7 @@ const brand = getBrand('cornerstone');
 
 export default function Page() {
   return (<>
-    <Hero hero={availability.hero} tone="deep" seed={43} />
+    <Hero hero={availability.hero} tone="deep" seed={43} portals={brand.external.portals} />
     {/* Maintenance and leasing questions go to Mason first, which is the whole
         point: it takes load off the phone rather than adding to it. */}
     <Section tone="surface"><BotPanel bot={bot} brandKey="cornerstone" tone="surface" actions={{ hoaReview: '/hoa#review' }} /></Section>
@@ -31,15 +30,6 @@ export default function Page() {
     </Section>
     <Section tone="surface">
       <ItemList {...availability.residents} columns={3} />
-      {/* Renders only once the AppFolio portal URLs are in config. */}
-      <div className="mt-12">
-        <PortalBar
-          portals={brand.external.portals}
-          only={['resident', 'hoa']}
-          heading={availability.portals.heading}
-          note={availability.portals.note}
-        />
-      </div>
     </Section>
     <Section tone="deep"><ClosingCta block={availability.closing} tone="deep" /></Section>
   </>);

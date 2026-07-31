@@ -33,6 +33,9 @@ export const hoa = {
       'Most boards inherit a management agreement they did not negotiate and never read again. This page is written to be useful to your board whether or not you ever contact us.',
     primaryCta: { label: 'Get the board guide', href: '#board-guide' },
     secondaryCta: { label: 'Call (316) 390-2120', href: 'tel:+13163902120' },
+    // Homeowners in an association we already manage need their login on
+    // landing, not after the argument.
+    portals: { only: ['hoa'], heading: 'Already a homeowner with us?' },
   },
 
   // THE GIVE. First on the page, no ask attached, no contact required to use it.
@@ -69,12 +72,6 @@ export const hoa = {
 
   // THE SMALL CREDENTIAL BLOCK. Deliberately short and factual, per the client's
   // hard constraint. Facts only, no adjectives, no case studies, no claims.
-  // Renders only when the AppFolio portal URLs are set in config.
-  portal: {
-    heading: 'Already a homeowner with us?',
-    note: 'Assessments, documents and your association\u2019s history are in the homeowner portal. It is the same login residents use, handled by our management system.',
-  },
-
   credentials: {
     heading: 'Prepared by',
     lines: [
