@@ -7,6 +7,9 @@ export const brand = {
   name: 'Cornerstone Management',
   legalName: 'Cornerstone Management LLC',
   personName: 'Justus Kidd',
+  // Header mark. Falls back to the wordmark when null, which is what Agent Kidd
+  // ships with — the client has no logo for that brand.
+  logo: '/cornerstone/CornerstoneLogo.png',
   shortName: 'Cornerstone',           // used in the nav pill, where space is tight
   tagline: null,                     // written in Phase 2
   domain: 'cornerstonemgmt.co',
@@ -35,7 +38,8 @@ export const brand = {
     licenseState: 'KS',
     equalHousing: true,
     realtorLogo: true,
-    idxDisclaimer: null,             // not required unless MLS data is displayed
+    // Client decision 2026-08-01: no IDX feed on V1, so no disclaimer is required.
+    idxDisclaimer: false,             // not required unless MLS data is displayed
     mlsName: 'SCK MLS',              // Tier A. Only matters if MLS data is ever displayed.
     pmLicense: null,                 // not required in KS for residential/HOA management
   },
@@ -54,10 +58,38 @@ export const brand = {
     crm: 'lofty',
     pmSoftware: 'appfolio',
     leadSourceTag: 'ProyTech Site — Cornerstone',
-    // AppFolio's public listings page for this account. Read it off the
-    // AppFolio site: it is the URL the "Vacancies" link already points at.
-    // Setting it lights up every "See available rentals" button on the build.
-    searchHandoffUrl: null,
+    // AppFolio's public listings page for this account. VERIFIED LIVE — it was
+    // serving four current listings when this was wired. Every "See available
+    // rentals" button on the build reads from here.
+    searchHandoffUrl: 'https://cornerstonemanagementks.appfolio.com/listings',
+
+    // The AppFolio listings WIDGET, embedded in the page rather than linked.
+    //
+    // Paste the snippet AppFolio generates, verbatim, as a template string.
+    // In AppFolio it is under the website / listings settings and looks roughly
+    // like a <div> plus a <script src="https://cornerstonemanagementks.appfolio
+    // .com/javascripts/listing.js">. Do not retype it or reconstruct it from
+    // memory: the attributes carry the account's listing context and differ
+    // between accounts.
+    //
+    // There is no public feed to build this natively — AppFolio's robots.txt
+    // disallows /listings.json and /listings.rss — so the widget is the only
+    // supported way to put live vacancies on a non-AppFolio site.
+    //
+    // Left null, the page shows a branded panel that sends people to the
+    // listings page instead. Nothing is ever blank.
+    listingEmbed: null,
+
+    // FASTEST PATH TO LIVE LISTINGS, if AppFolio permits framing.
+    // Flip to true, load /availability in a real browser, and look:
+    //   listings visible  -> leave it on, done
+    //   empty or refused  -> AppFolio sends X-Frame-Options, set it back to
+    //                        false and use listingEmbed instead
+    // It could not be verified from the build environment, which has no direct
+    // outbound browser access, so it ships OFF rather than shipping a maybe.
+    // The handoff button renders either way, so neither setting can leave the
+    // page without a route to the vacancies.
+    listingIframe: false,
 
     // Owner, resident and HOA portals are HOSTED BY APPFOLIO. Nothing is built
     // here and nothing should be: an owner's statements and a resident's ledger
@@ -78,13 +110,13 @@ export const brand = {
     // so both labels point at the same place on purpose — a homeowner looking
     // for "HOA" should not have to know it is called the resident portal.
     portals: [
-      { key: 'resident', label: 'Resident portal', url: 'https://cornerstonemanagementks.appfolio.com/connect', primary: true },
-      { key: 'hoa',      label: 'HOA homeowner portal', url: 'https://cornerstonemanagementks.appfolio.com/connect' },
+      { key: 'resident', label: 'Resident portal', url: 'https://cornerstonemanagementks.appfolio.com/connect/users/sign_in', primary: true },
+      { key: 'hoa',      label: 'HOA homeowner portal', url: 'https://cornerstonemanagementks.appfolio.com/connect/users/sign_in' },
       { key: 'owner',    label: 'Owner portal', url: 'https://cornerstonemanagementks.appfolio.com/oportal/users/log_in', primary: true },
     ],
     booking: null,
-    // Committed scope: replicate AppFolio listing publishing on the new site.
-    // Blocked on a formal AppFolio API key request plus the client's login.
+    // The full AppFolio API, which is a separate gated request and is NOT
+    // needed for listings. Kept null deliberately.
     listingFeed: null,
   },
 

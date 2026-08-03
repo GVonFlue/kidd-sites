@@ -93,10 +93,17 @@ export const home = {
 
   crossBrand: {
     eyebrow: 'The other half of the business',
-    heading: 'Cornerstone Management',
+    heading: 'He does not stop at the sale. Cornerstone Management.',
     body:
-      'If you own property you would rather not manage yourself, that is the same company, the same person, and the same phone. Single family homes, apartment buildings, and seven homeowner associations across the Wichita metro.',
+      'If you own property you would rather not manage yourself, that is the same company, the same person, and the same phone. Single family homes, apartment buildings, and seven homeowner associations across the Wichita metro, including the subsidised programmes most managers in this market decline.',
+    // The same figures the Cornerstone site leads with. Evidence, not a claim.
+    stats: [
+      { figure: '500+', label: 'doors under management' },
+      { figure: '7', label: 'homeowner associations' },
+      { figure: '1,000+', label: 'residents' },
+    ],
     cta: { label: 'See how management works', href: 'https://cornerstonemgmt.co' },
+    secondaryCta: { label: 'Available rentals', href: 'https://cornerstonemgmt.co/availability' },
   },
 
   closing: {

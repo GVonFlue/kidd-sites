@@ -1,12 +1,18 @@
 // Nav labels and CTA copy. Copy lives here, never in a component.
 // Final wording is written in Phase 2.
 
+// Rentals first, client decision at the V1 sit-down. It is the highest-volume
+// intent on this brand: far more people arrive looking for somewhere to live
+// than arrive looking to hand over a portfolio.
+//
+// The first TWO are what survive on a phone; everything after goes in the
+// dropdown. Order below is the order of importance, not a list.
 export const nav = [
+  { href: '/availability', label: 'Rentals' },
   { href: '/property-management', label: 'Management' },
   { href: '/hoa', label: 'HOA' },
-  { href: '/commercial', label: 'Commercial' },
   { href: '/owners', label: 'Owners' },
-  { href: '/availability', label: 'Rentals' },
+  { href: '/commercial', label: 'Commercial' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
 ];
@@ -76,3 +82,39 @@ export const routes = {
     paths: ['Contact form', 'Leasing phone', 'Sales phone', 'Email'],
   },
 };
+
+// Footer sitemap, grouped by audience. Rentals first, matching the nav.
+export const siteLinks = [
+  {
+    heading: 'Renting',
+    links: [
+      { href: '/availability', label: 'Available rentals' },
+      { href: '/availability#listings', label: 'Current vacancies' },
+      { href: '/availability', label: 'Resident portal' },
+    ],
+  },
+  {
+    heading: 'Owners',
+    links: [
+      { href: '/property-management', label: 'Property management' },
+      { href: '/owners', label: 'Owner portal' },
+      { href: '/property-management#analysis', label: 'Free rent analysis' },
+    ],
+  },
+  {
+    heading: 'Associations & commercial',
+    links: [
+      { href: '/hoa', label: 'HOA management' },
+      { href: '/hoa#review', label: 'Request an HOA review' },
+      { href: '/commercial', label: 'Commercial leasing' },
+    ],
+  },
+  {
+    heading: 'Company',
+    links: [
+      { href: '/about', label: 'About Cornerstone' },
+      { href: '/contact', label: 'Contact' },
+      { href: 'https://agentkidd.com', label: 'Buying or selling? Agent Kidd' },
+    ],
+  },
+];

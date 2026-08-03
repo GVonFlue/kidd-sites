@@ -12,15 +12,41 @@ export default function CrossBrand({ block, tone = 'deep' }) {
   if (!block) return null;
   const deep = tone === 'deep';
   return (
-    <div className="grid items-start gap-8 md:grid-cols-[1fr_auto] md:gap-16">
+    <div className="grid items-center gap-10 md:grid-cols-[1fr_auto] md:gap-16">
       <div className="max-w-prose">
         <Eyebrow tone={deep ? 'deep' : 'ink'}>{block.eyebrow}</Eyebrow>
-        <H2 className="mt-4">{block.heading}</H2>
-        <p className={`mt-5 leading-relaxed ${deep ? 'text-white/80' : 'text-ink/80'}`}>{block.body}</p>
-        <div className="mt-8">
-          <Button href={block.cta?.href} level="secondary" tone={deep ? 'deep' : 'light'}>
+        {/* Deliberately larger than a normal H2. This is the one place on the
+            agent site that has to carry a second brand, and at section-heading
+            size it read as a footnote about a side project rather than as half
+            the business. */}
+        <H2 className="mt-4 !text-[30px] sm:!text-[36px] lg:!text-[44px]">{block.heading}</H2>
+        <p className={`mt-5 text-[17px] leading-relaxed md:text-lg ${deep ? 'text-white/80' : 'text-ink/80'}`}>{block.body}</p>
+
+        {/* The numbers are the argument. Saying "he also manages property" is a
+            claim; 500 doors and seven associations is evidence, and it is the
+            same evidence the Cornerstone site leads with. */}
+        {block.stats?.length ? (
+          <dl className={`mt-9 grid grid-cols-3 gap-5 border-t pt-7 ${deep ? 'border-white/15' : 'border-line'}`}>
+            {block.stats.map((s) => (
+              <div key={s.label}>
+                <dt className={`font-display text-[26px] font-bold tabular-nums tracking-[-0.02em] sm:text-[32px] ${deep ? 'text-accent-lift' : 'text-accent-ink'}`}>
+                  {s.figure}
+                </dt>
+                <dd className={`mt-1 text-[13px] leading-snug ${deep ? 'text-white/70' : 'text-ink/70'}`}>{s.label}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
+
+        <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <Button href={block.cta?.href} level="primary" tone={deep ? 'deep' : 'light'}>
             {block.cta?.label}
           </Button>
+          {block.secondaryCta ? (
+            <Button href={block.secondaryCta.href} level="secondary" tone={deep ? 'deep' : 'light'}>
+              {block.secondaryCta.label}
+            </Button>
+          ) : null}
         </div>
       </div>
       {/* A real photograph of Justus. No stock imagery anywhere on this build.

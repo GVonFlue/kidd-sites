@@ -9,6 +9,9 @@ export const brand = {
   name: 'Agent Kidd',
   legalName: 'Real Broker, LLC',
   personName: 'Justus Kidd',
+  // Header mark. Falls back to the wordmark when null, which is what Agent Kidd
+  // ships with — the client has no logo for that brand.
+  logo: null,
   shortName: 'Agent Kidd',           // used in the nav pill, where space is tight
   tagline: null,                     // written in Phase 2
   domain: 'agentkidd.com',
@@ -33,7 +36,8 @@ export const brand = {
     licenseState: 'KS',
     equalHousing: true,
     realtorLogo: true,               // nar_member = Yes on onboarding form
-    idxDisclaimer: null,             // not required: no MLS data displayed
+    // Client decision 2026-08-01: no IDX feed on V1, so no disclaimer is required.
+    idxDisclaimer: false,             // not required: no MLS data displayed
     mlsName: 'SCK MLS',              // Tier A. Only matters if MLS data is ever displayed.
   },
 

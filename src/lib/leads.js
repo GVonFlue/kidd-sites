@@ -21,13 +21,13 @@
  *  integers, which JavaScript silently corrupts above 2^53. Never parse one. */
 export const asId = (v) => (v === null || v === undefined ? null : String(v));
 
-export async function postJson(url, body, timeoutMs = 8000) {
+export async function postJson(url, body, timeoutMs = 8000, headers = {}) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...headers },
       body: JSON.stringify(body),
       signal: ctrl.signal,
     });
@@ -58,8 +58,12 @@ async function toCrm(lead) {
   const key = process.env.CRM_API_KEY;
   const url = process.env.CRM_ENDPOINT_URL;
   if (!key || !url) return { skipped: true, reason: 'CRM_API_KEY or CRM_ENDPOINT_URL not set' };
+  // Lofty authenticates with a HEADER, not a body field: `Authorization: token
+  // <key>`. The first version put the key in the JSON body, which every CRM
+  // would have rejected as unauthenticated while still returning a 2xx-looking
+  // page on some endpoints. Base URL is https://api.lofty.com; the exact leads
+  // path is set in CRM_ENDPOINT_URL so it can be corrected without a deploy.
   return postJson(url, {
-    apiKey: key,
     firstName: lead.name,
     email: lead.email,
     phone: lead.phone || null,
@@ -67,7 +71,7 @@ async function toCrm(lead) {
     source: lead.source,
     sourceDetail: lead.brand,
     externalId: asId(lead.id),
-  });
+  }, 8000, { Authorization: `token ${key}` });
 }
 
 async function toGhl(lead) {

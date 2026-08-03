@@ -65,3 +65,41 @@ export const routes = {
     paths: ['Contact form', 'Tappable phone', 'Text', 'Email'],
   },
 };
+
+// Footer sitemap. Grouped by what a visitor is trying to do, which is also how
+// the pages themselves are organised. Deep links point at real anchors that
+// exist on those pages; a footer link to a fragment that is not there is a dead
+// link that no crawler reports.
+export const siteLinks = [
+  {
+    heading: 'Buying',
+    links: [
+      { href: '/buy', label: 'Buying in Wichita' },
+      { href: '/buy#guide', label: 'Free buyer guide' },
+      { href: '/investors', label: 'Investment property' },
+    ],
+  },
+  {
+    heading: 'Selling',
+    links: [
+      { href: '/sell', label: 'Selling your home' },
+      { href: '/sell#valuation', label: 'Free home valuation' },
+    ],
+  },
+  {
+    heading: 'About Justus',
+    links: [
+      { href: '/about', label: 'About Justus Kidd' },
+      { href: '/reviews', label: 'Client reviews' },
+      { href: '/contact', label: 'Contact' },
+    ],
+  },
+  {
+    heading: 'Property management',
+    links: [
+      { href: 'https://cornerstonemgmt.co', label: 'Cornerstone Management' },
+      { href: 'https://cornerstonemgmt.co/property-management', label: 'Management for owners' },
+      { href: 'https://cornerstonemgmt.co/availability', label: 'Rentals in Wichita' },
+    ],
+  },
+];

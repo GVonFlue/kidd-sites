@@ -23,7 +23,7 @@ function Missing({ field }) {
   );
 }
 
-export default function Footer({ brand, otherBrand }) {
+export default function Footer({ brand, otherBrand, nav = [], siteLinks = null }) {
   const c = brand.compliance;
   const a = brand.address;
   const year = 2026;
@@ -31,7 +31,36 @@ export default function Footer({ brand, otherBrand }) {
   return (
     <footer className="mt-auto border-t border-line bg-ink text-white">
       <div className="mx-auto max-w-6xl px-5 py-14">
-        <div className="grid gap-10 md:grid-cols-3">
+        {/* SITEMAP. Client request at the V1 sit-down: real internal linking in
+            the footer, on every page.
+
+            This is not decoration. Every page on a small site should be reachable
+            in one click from every other page: it spreads link equity evenly
+            instead of pooling it on the home page, and it gives a crawler a
+            complete map of the site from whatever page it happens to land on.
+            Grouped by intent rather than dumped in one list, because a column
+            headed "For owners" is also a piece of on-page relevance. */}
+        <nav aria-label="Site" className="grid gap-8 border-b border-white/15 pb-12 sm:grid-cols-2 lg:grid-cols-4">
+          {(siteLinks || [{ heading: 'Pages', links: nav }]).map((group) => (
+            <div key={group.heading}>
+              <p className="font-mono text-xs uppercase tracking-[0.08em] text-accent-lift">{group.heading}</p>
+              <ul className="mt-4 space-y-1">
+                {group.links.map((l) => (
+                  <li key={l.href + l.label}>
+                    <a
+                      href={l.href}
+                      className="inline-flex min-h-[36px] items-center text-sm leading-snug text-white/80 transition-colors hover:text-white"
+                    >
+                      {l.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
+
+        <div className="grid gap-10 pt-12 md:grid-cols-3">
           {/* Contact */}
           <div>
             <p className="font-display text-lg font-semibold">{brand.name}</p>

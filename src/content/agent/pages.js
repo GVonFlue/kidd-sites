@@ -47,8 +47,12 @@ export const buy = {
   closing: {
     heading: 'Ready to talk, or nowhere near ready?',
     body: 'Both are fine. The guide is there for one, the phone is there for the other.',
-    primaryCta: { label: 'Send me the buyer guide', href: '#guide' },
-    secondaryCta: { label: 'Call or text (316) 390-2120', href: 'tel:+13163902120' },
+    // The phone is primary here, NOT the guide. The guide's own form sits a
+    // screen above this block, so a second brass button pointing back at it put
+    // the same offer on screen twice and gave the visitor a choice between a
+    // thing and itself.
+    primaryCta: { label: 'Call or text (316) 390-2120', href: 'tel:+13163902120' },
+    secondaryCta: { label: 'Send me the buyer guide', href: '#guide' },
   },
 };
 

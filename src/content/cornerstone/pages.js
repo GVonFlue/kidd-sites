@@ -63,8 +63,10 @@ export const commercial = {
     heading: 'Office and commercial space in the Wichita metro.',
     body:
       'Tell us roughly how much space you need and when you would want it, and we will tell you whether we have something that fits. If we do not, we will say so rather than showing you space that does not work.',
-    primaryCta: { label: 'Send my space requirements', href: '#inquiry' },
-    secondaryCta: { label: 'Call (316) 390-2120', href: 'tel:+13163902120' },
+    // Phone primary: the inquiry form is directly above this block, so pointing
+    // a second brass button back at it duplicated the same offer on one screen.
+    primaryCta: { label: 'Call (316) 390-2120', href: 'tel:+13163902120' },
+    secondaryCta: { label: 'Send my space requirements', href: '#inquiry' },
   },
   // NEEDS VERIFICATION: the discovery call says Justus holds commercial office
   // space that is currently vacant and actively costing him. The onboarding form
@@ -79,8 +81,10 @@ export const commercial = {
   closing: {
     heading: 'Tell us what you need.',
     body: 'A rough square footage and a date is enough to start.',
-    primaryCta: { label: 'Send my space requirements', href: '#inquiry' },
-    secondaryCta: { label: 'Call (316) 390-2120', href: 'tel:+13163902120' },
+    // Phone primary: the inquiry form is directly above this block, so pointing
+    // a second brass button back at it duplicated the same offer on one screen.
+    primaryCta: { label: 'Call (316) 390-2120', href: 'tel:+13163902120' },
+    secondaryCta: { label: 'Send my space requirements', href: '#inquiry' },
   },
 };
 
@@ -122,7 +126,8 @@ export const availability = {
     heading: 'Available rentals across the Wichita metro.',
     body:
       'Single family homes and apartments. Applications are handled through our resident system, so the apply button will take you there.',
-    primaryCta: { label: 'See available rentals', href: null }, // NEEDS: AppFolio listing URL
+    // href is injected from config so the listings URL lives in exactly one place.
+    primaryCta: { label: 'See available rentals' },
     // Sign-in, above the fold. Residents and HOA homeowners share one login.
     portals: { only: ['resident', 'hoa'], heading: 'Already with us?' },
     secondaryCta: { label: 'Call leasing (316) 390-1009', href: 'tel:+13163901009' },
@@ -140,6 +145,23 @@ export const availability = {
     note:
       'We do business in accordance with the Fair Housing Act. If you need a reasonable accommodation at any point in the application process, tell us and we will arrange it.',
   },
+  // The listings block. Shows the AppFolio widget when one is configured, and
+  // always shows the way through to the full list either way.
+  listings: {
+    eyebrow: 'Current vacancies',
+    heading: 'What is available right now',
+    // Wording is deliberately true in BOTH states — with the AppFolio widget
+    // live, and with the dated snapshot rendering. The earlier line claimed the
+    // list came straight from the management system, which would have been a
+    // false statement on the page for as long as the embed snippet was
+    // outstanding. Never write copy that only becomes true after a later step.
+    body:
+      'Everything below is currently vacant. Photos, the full detail and the application itself all live in our management system, so any listing you tap takes you straight there.',
+    cta: 'See all available rentals',
+    note:
+      'Applications, the fee and the screening are all handled in the same system, so the apply button takes you there and your details carry across.',
+  },
+
   residents: {
     heading: 'Already renting from us',
     items: [
@@ -153,7 +175,7 @@ export const availability = {
     heading: 'Questions before you apply?',
     body: 'Leasing will answer them. So will the chat, and it does not put you on hold.',
     primaryCta: { label: 'Call leasing (316) 390-1009', href: 'tel:+13163901009' },
-    secondaryCta: { label: 'See available rentals', href: null },
+    secondaryCta: { label: 'See available rentals' },
   },
 };
 
