@@ -40,6 +40,24 @@ export default function Hero({ hero, tone = 'light', seed = 7, portals = [] }) {
   const avatar = img.avatar || img.src;
   const framed = !cutout && img.src;
 
+  // `size: 'lg'` is the ABOUT-PAGE treatment. On a page whose entire subject is
+  // the man, the photograph is allowed to be the co-equal element rather than
+  // the second one — so the figure grows, the text column narrows to make room,
+  // and the section gets a floor tall enough to contain him.
+  //
+  // THAT FLOOR IS NOT COSMETIC. The figure is bottom-anchored and absolutely
+  // positioned, and the section is `overflow-visible` at desktop so he can pass
+  // behind the block below. A 520px-tall figure in a 380px section would
+  // therefore overflow UPWARDS, through the top of the hero and under the
+  // floating nav. The min-height is what keeps the overflow pointing down,
+  // where it is the intended effect.
+  const big = img.size === 'lg';
+  const figureWidth = big ? 'w-[430px] xl:w-[520px]' : 'w-[350px] xl:w-[420px]';
+  const figureSizes = big
+    ? '(max-width: 1023px) 1px, (max-width: 1279px) 430px, 520px'
+    : '(max-width: 1023px) 1px, (max-width: 1279px) 350px, 420px';
+  const textWidth = big ? 'max-w-4xl lg:max-w-[500px] xl:max-w-[560px]' : 'max-w-4xl lg:max-w-[560px] xl:max-w-[620px]';
+
   const backdrop = hero.backdrop?.src ? hero.backdrop : null;
 
   // Sign-in belongs above the fold. An existing owner or resident did not come
@@ -107,7 +125,7 @@ export default function Hero({ hero, tone = 'light', seed = 7, portals = [] }) {
             {/* Sized to stay SECOND in the hierarchy. He has to hold the right
                 side without out-weighing the headline, which is the first
                 fixation and the thing making the claim. */}
-            <HeroPortrait className="absolute bottom-0 right-5 w-[350px] xl:w-[420px]">
+            <HeroPortrait className={`absolute bottom-0 right-5 ${figureWidth}`}>
               {/* A soft brass ground so the cutout does not float on the grid. */}
               <div
                 className="absolute inset-x-[-12%] bottom-[-5%] top-[24%] -z-10 rounded-[50%]"
@@ -129,7 +147,7 @@ export default function Hero({ hero, tone = 'light', seed = 7, portals = [] }) {
                 width={960}
                 height={960}
                 priority
-                sizes="(max-width: 1023px) 1px, (max-width: 1279px) 350px, 420px"
+                sizes={figureSizes}
                 className="block h-auto w-full select-none"
               />
             </HeroPortrait>
@@ -140,11 +158,14 @@ export default function Hero({ hero, tone = 'light', seed = 7, portals = [] }) {
       {/* Plane 3 — the words. Always on top of both. */}
       <div
         className={`relative mx-auto grid max-w-6xl gap-10 px-5 pb-16 pt-14 md:pb-28 md:pt-20 lg:items-center lg:gap-16 ${
-          framed || signIn.length ? 'lg:grid-cols-[1fr_auto]' : ''
-        }`}
+          big ? 'lg:min-h-[560px] xl:min-h-[640px]' : ''
+        } ${framed || signIn.length ? 'lg:grid-cols-[1fr_auto]' : ''}`}
       >
-        <div className={cutout ? 'max-w-4xl lg:max-w-[560px] xl:max-w-[620px]' : 'max-w-4xl'}>
-          <div data-reveal-hero className="flex items-center gap-4">
+        <div className={cutout ? textWidth : 'max-w-4xl'}>
+          {/* The bigger circle stacks instead of sitting inline: an eyebrow
+              vertically centred against a 132px portrait floats in the middle of
+              nothing. Below it, it reads as a caption on the photograph. */}
+          <div data-reveal-hero className={big ? 'flex flex-col items-start gap-4' : 'flex items-center gap-4'}>
             {avatar ? (
               <Image
                 src={avatar}
@@ -156,8 +177,13 @@ export default function Hero({ hero, tone = 'light', seed = 7, portals = [] }) {
                 // above 1024px, but a browser still picks a candidate from the
                 // srcset and downloads it. Telling it the box is 1px wide makes
                 // that download the smallest variant instead of a full-size one.
-                sizes="(min-width: 1024px) 1px, 88px"
-                className="h-[88px] w-[88px] shrink-0 rounded-full object-cover object-top ring-2 ring-accent/30 lg:hidden"
+                sizes={big ? '(min-width: 1024px) 1px, 132px' : '(min-width: 1024px) 1px, 88px'}
+                // The phone gets the bigger circle too on the about treatment.
+                // A page about a person that shows a thumbnail of him on the
+                // device most people read it on is not "loud and proud".
+                className={`shrink-0 rounded-full object-cover object-top ring-2 ring-accent/30 lg:hidden ${
+                  big ? 'h-[132px] w-[132px]' : 'h-[88px] w-[88px]'
+                }`}
               />
             ) : null}
             <Eyebrow tone={deep ? 'deep' : 'ink'}>{hero.eyebrow}</Eyebrow>

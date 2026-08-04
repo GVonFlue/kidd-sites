@@ -10,7 +10,12 @@ import { testimonials } from '@/content/shared/testimonials';
 export const metadata = pageMetadata('agent', '/about');
 export default function Page() {
   return (<>
-    <Hero hero={about.hero} seed={17} />
+    {/* tone="wash", matching the home hero. The cutout is bottom-anchored and
+        passes BEHIND the section below it on scroll — that effect only reads if
+        the section below is a different colour, otherwise the seam he crosses is
+        invisible and he simply appears to be cut off. The default 'light' tone
+        is the same bg as the section that follows. */}
+    <Hero hero={about.hero} tone="wash" seed={17} />
     <Section tone="surface"><Prose {...about.story} /></Section>
     <Section tone="wash">
       <h2 className="font-display text-xl font-bold tracking-[-0.02em] md:text-2xl">{about.credentials.heading}</h2>

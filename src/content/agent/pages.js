@@ -122,6 +122,17 @@ export const about = {
     heading: 'Justus Kidd',
     body:
       'Licensed Kansas agent, brokered by Real Broker, LLC. He founded Cornerstone Management four years ago and it now looks after more than 500 doors and seven homeowner associations across the Wichita metro.',
+    // The same cutout as the home hero, at the LARGE size. On every other page
+    // the photograph is the second element and the headline is the first; on the
+    // page that is entirely about him, they are co-equal. `size: 'lg'` is what
+    // widens the figure, narrows the text column to make room, and gives the
+    // section a floor tall enough to contain him — see Hero.jsx.
+    image: {
+      cutout: '/agent/justus-cutout.png',
+      avatar: '/agent/justus-avatar.png',
+      alt: 'Justus Kidd',
+      size: 'lg',
+    },
   },
   story: {
     heading: 'The short version',
