@@ -68,8 +68,32 @@ const AUDIT = () => {
     //   2. the CSS `opacity` property on the element (Tailwind's opacity-60)
     //   3. `opacity` inherited from any ancestor
     // Missing any one of them measures a colour that is never painted.
-    const fgRaw = parse(st.color);
     const bg = bgOf(el);
+    // GRADIENT TEXT. `background-clip: text` paints the glyphs with the
+    // background image and sets `color: transparent`. Reading `color` alone
+    // measures alpha 0, composites straight to the background, and reports a
+    // flat 1:1 failure for text a sighted visitor can read perfectly well.
+    //
+    // So when the glyphs are painted by a gradient, measure THE GRADIENT: pull
+    // every colour stop out of the background-image and keep the WORST one.
+    // Checking only the darkest stop would pass a headline whose bright end is
+    // invisible, which is the exact failure mode this is guarding.
+    const clip = st.webkitBackgroundClip || st.backgroundClip;
+    let fgRaw = parse(st.color);
+    if (clip === 'text' && fgRaw.a === 0) {
+      // rgb()/rgba() only, deliberately. `parse` reads numbers out of a string
+      // and would turn "#8A5C13" into nonsense rather than failing loudly.
+      // Computed background-image always normalises hex to rgb(), so nothing
+      // real is missed.
+      const stops = (st.backgroundImage.match(/rgba?\([^)]*\)/gi) || []).map(parse);
+      if (stops.length) {
+        const ratioOf = (c) => {
+          const [x, y] = [lum(c.rgb), lum(bg)].sort((a, b) => b - a);
+          return (x + 0.05) / (y + 0.05);
+        };
+        fgRaw = stops.reduce((worst, c) => (ratioOf(c) < ratioOf(worst) ? c : worst));
+      }
+    }
     let opacity = 1;
     for (let n = el; n; n = n.parentElement) opacity *= parseFloat(getComputedStyle(n).opacity || '1');
     const effA = fgRaw.a * opacity;

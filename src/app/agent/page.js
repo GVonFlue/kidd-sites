@@ -8,12 +8,14 @@ import Prose from '@/components/shared/Prose';
 import Testimonial from '@/components/shared/Testimonial';
 import LeadForm from '@/components/shared/LeadForm';
 import CrossBrand from '@/components/shared/CrossBrand';
+import Marquee from '@/components/shared/Marquee';
 import ClosingCta from '@/components/shared/ClosingCta';
 import { getBrand } from '@/config';
 import { home } from '@/content/agent/home';
 import { bot } from '@/content/agent/bot';
 import { forms } from '@/content/shared/forms';
 import { testimonials } from '@/content/shared/testimonials';
+import { agentTicker } from '@/content/shared/ticker';
 
 export const metadata = pageMetadata('agent', '/');
 
@@ -27,6 +29,12 @@ export default function Page() {
           behind the section below as you scroll, so the two grounds have to
           differ or the motion reads as a cropped photograph. */}
       <Hero hero={home.hero} tone="wash" seed={7} />
+
+      {/* The credential band, in the position a logo bar occupies on a SaaS
+          site: the first thing under the hero, where a visitor deciding whether
+          to keep reading gets a second of evidence. Every line is verified —
+          see content/shared/ticker.js. */}
+      <Marquee items={agentTicker} tone="surface" label="Credentials" />
 
       {/* Bot in the TOP THIRD, per the conversion architecture minimums.
           `overlap` is what he passes behind. */}

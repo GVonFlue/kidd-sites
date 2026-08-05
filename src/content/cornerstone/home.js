@@ -31,6 +31,8 @@ export const home = {
     // backdrop: { src: '/cornerstone/wichita.jpg', position: 'center 40%' },
     heading:
       'We manage five hundred doors in Wichita, including the programs most companies will not take on.',
+    // Substring must match `heading` verbatim.
+    accent: 'five hundred doors',
     body:
       'Cornerstone Management looks after single family homes, apartment buildings, and seven homeowner associations across the metro. That includes Section 8, HOPE VI, RAD and LIHTC compliance, which is detailed work most managers in this market decline.',
     primaryCta: { label: 'Get a free rent analysis', href: '/property-management#analysis' },

@@ -5,6 +5,7 @@ import HeroPortrait from './HeroPortrait';
 import Button from './Button';
 import { Eyebrow } from './Section';
 import PortalBar from './PortalBar';
+import withAccent from './Emphasis';
 
 /**
  * EYE PATH, in order:
@@ -190,7 +191,7 @@ export default function Hero({ hero, tone = 'light', seed = 7, portals = [] }) {
           </div>
 
           <h1 className="mt-5 font-display text-[32px] font-bold leading-[1.05] tracking-[-0.02em] sm:text-[40px] lg:text-[54px] lg:leading-[1.02] lg:tracking-[-0.025em] xl:text-[62px]">
-            {hero.heading}
+            {withAccent(hero.heading, hero.accent, deep ? 'deep' : 'light')}
           </h1>
           {hero.body ? (
             <p className={`mt-5 max-w-prose text-[17px] leading-relaxed md:mt-6 md:text-lg ${deep ? 'text-white/80' : 'text-ink/80'}`}>

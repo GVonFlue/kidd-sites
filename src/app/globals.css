@@ -54,6 +54,81 @@
   @media (min-width: 768px) { .frame { border-radius: 32px; } }
 }
 
+/* ── Brass word gradient ────────────────────────────────────────────────────
+   One word of a headline lifted into brass. `color: transparent` is what makes
+   the gradient visible through the glyphs, and it is also what makes this
+   dangerous: if `background-clip: text` is not supported, transparent text is
+   INVISIBLE text. The @supports gate is not politeness, it is the difference
+   between a styled headline and a blank one.
+
+   THE STOPS ARE CONTRAST-BOUND, AND THE BINDING GROUND IS `wash`, NOT WHITE.
+   Both heroes that carry an accent sit on wash (#F2F3F3) or on the deep
+   ground, so measuring against white flatters every stop by about 0.3:1. The
+   first version ended on `accent` (#C2832A) — 3.19:1 on white, which looks
+   safe, and 2.87:1 on wash, which fails the 3:1 large-text floor. The audit
+   caught it; the eye would not have.
+
+   Light gradient: #8A5C13 (5.22:1 on wash) -> #B0761F (3.46:1 on wash).
+   accent-lift is 2.2:1 on white and is only ever used on the deep ground.
+   Never extend the light gradient "just a bit brighter" — the bright end is
+   the end that fails, and it fails on wash first. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .accent-gradient,
+  .accent-gradient-deep {
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    /* Painting is per-span, so a headline that wraps mid-accent gets the
+       gradient restarted on each line rather than stretched across both. */
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  .accent-gradient {
+    background-image: linear-gradient(96deg, #8A5C13 0%, #9E681B 48%, #B0761F 100%);
+  }
+  .accent-gradient-deep {
+    background-image: linear-gradient(96deg, #C2832A 0%, #CE9438 48%, #D9A648 100%);
+  }
+}
+
+/* Windows High Contrast strips background images, which would leave the
+   transparent glyphs invisible. Hand the word back its normal colour. */
+@media (forced-colors: active) {
+  .accent-gradient,
+  .accent-gradient-deep {
+    color: CanvasText;
+    background-image: none;
+  }
+}
+
+/* ── Marquee ────────────────────────────────────────────────────────────────
+   An infinite horizontal ticker. The track holds the list TWICE and travels
+   exactly -50%, so the moment it wraps, copy two is sitting precisely where
+   copy one started and the loop is seamless. Any other distance visibly jumps.
+
+   The global reduced-motion rule collapses every animation to 0.01ms, which
+   would leave this parked at its END state — showing the duplicate copy. So
+   the transform is explicitly reset below rather than left to the global rule.
+   A blanket "kill all animation" is not the same as "restore the start
+   state", and this is the case where the difference shows. */
+@keyframes marquee-track {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+.marquee-track {
+  animation: marquee-track var(--marquee-duration, 46s) linear infinite;
+  will-change: transform;
+}
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
 /* ── Scroll reveal ──────────────────────────────────────────────────────────
    The hidden state is scoped to `.js`, which is set by an inline script in the
    document head. This is deliberate and it is the whole safety mechanism:

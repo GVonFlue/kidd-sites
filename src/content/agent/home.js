@@ -21,6 +21,9 @@ export const home = {
     eyebrow: 'Wichita, Kansas',
     // Headline makes a claim, does not describe a category.
     heading: 'Most agents sell houses. I also manage five hundred of them.',
+    // One phrase of the headline lifted into brass. The substring must appear
+    // verbatim in `heading` above — reword one and reword the other.
+    accent: 'five hundred of them',
     body:
       'I am Justus Kidd. I have run thousands of showings across Wichita, and my management company looks after more than 500 doors in the same city. So when we walk a property together I can tell you what it costs to own it, not just what it costs to buy it.',
     primaryCta: { label: 'Get a free home valuation', href: '/sell#valuation' },

@@ -64,6 +64,18 @@ for (const width of WIDTHS) {
           // SVG decoration is deliberately oversized and clipped by its own
           // wrapper; it is not a layout fault.
           if (el.ownerSVGElement || el.tagName.toLowerCase() === 'svg') continue;
+          // DECLARED overflow. A marquee track is wider than the viewport by
+          // design — that is the mechanism, not a bug. The exemption is an
+          // explicit attribute rather than a class-name match on purpose: it
+          // has to be something an author opts into deliberately, so a genuine
+          // runaway element can never inherit the exemption by accident. The
+          // clipping ancestor is still required to be `overflow: hidden`,
+          // which is verified below rather than assumed.
+          const declared = el.closest('[data-allow-overflow]');
+          if (declared) {
+            const host = declared.parentElement;
+            if (host && getComputedStyle(host).overflowX === 'hidden') continue;
+          }
           if (b.width > w + 1 && (!worst || b.width > worst.w)) {
             worst = {
               w: Math.round(b.width),
