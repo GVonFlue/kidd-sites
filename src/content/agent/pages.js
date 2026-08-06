@@ -66,6 +66,52 @@ export const sell = {
     primaryCta: { label: 'Get a free home valuation', href: '#valuation' },
     secondaryCta: { label: 'Call or text Justus', href: 'tel:+13163902120' },
   },
+  // THE SELLER'S SEQUENCE — value before the ask.
+  //
+  // The page used to open on the valuation form: hero, then a form, then an
+  // explanation of the form. A seller three months out from listing had nothing
+  // to read and no reason to stay, and a page that asks before it gives
+  // converts the people who were already sold and nobody else.
+  //
+  // EVERY LINE IS GROUNDED IN SOMETHING THE SITE ALREADY ASSERTS. The valuation
+  // written by hand with comparables attached, and the willingness to say wait,
+  // are from the hero and the closing block. The repair judgement comes from the
+  // 500 doors and the turnovers, which is the differentiator on the home page.
+  // Nothing here invents a fee, a timeline, a vendor or a guarantee, and nothing
+  // characterises a buyer.
+  process: {
+    eyebrow: 'Before you list anything',
+    heading: 'How selling actually goes',
+    body:
+      'Most of this happens before a sign goes in the yard. You are not committing to anything by reading it, and you are not committing to anything by asking for the first step either.',
+    steps: [
+      {
+        label: 'Start with the number',
+        line: 'A valuation written by hand with the comparable sales attached, so you can check the reasoning rather than take it on faith. If it says this is a bad time to sell, that is what it will say.',
+      },
+      {
+        label: 'Work out what is worth fixing',
+        line: 'Not every repair pays for itself. Running 500 doors means Justus has paid for a lot of turnovers, so he can tell you what buyers in Wichita actually price in and what you would be spending on for nothing.',
+      },
+      {
+        label: 'Set the asking price',
+        line: 'What you list at and the evidence behind it. Pricing ahead of the comparables to leave negotiating room is the most common reason a house sits, and sitting costs more than the gap you were protecting.',
+      },
+      {
+        label: 'Go to market',
+        line: 'Photographs, measurements and the detail filled in properly, then listed and syndicated. A listing that is thin on detail gets fewer showings, and you never find out which ones you missed.',
+      },
+      {
+        label: 'Showings and offers',
+        line: 'You hear what buyers said, not just how many came through. When an offer arrives, price is one term among several, and Justus will tell you which of the others are worth more to you than the number.',
+      },
+      {
+        label: 'Inspection and closing',
+        line: 'Which findings are worth renegotiating over and which are normal for the age of the house, then what you sign, what you pay, and what to check before you do.',
+      },
+    ],
+  },
+
   what: {
     heading: 'What you get back',
     body:

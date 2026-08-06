@@ -12,8 +12,15 @@ import { useEffect, useRef, useState } from 'react';
  * THE TEXT IS NEVER SPLIT IN THE ACCESSIBILITY TREE. Wrapping each word in its
  * own element makes some screen readers announce them individually — "Start.
  * With. What. It. Is. Worth." — which is a genuinely worse experience than no
- * animation. So the real sentence is rendered once, visually hidden, and the
- * per-word spans are `aria-hidden`. One reads it, the other animates it.
+ * animation. So the per-word spans are `aria-hidden` and the accessible name
+ * comes from `aria-label` on the heading itself.
+ *
+ * IT USED TO BE A VISUALLY-HIDDEN SECOND COPY OF THE SENTENCE, and that was
+ * wrong in a way that only showed up when reading the rendered DOM: every
+ * heading on both brands contained its own text TWICE. Screen readers were
+ * fine; a crawler sees a duplicated <h2> on every section of every page, which
+ * is a keyword-stuffing signal nobody chose. `aria-label` gives the same
+ * accessible name with the visible text present exactly once.
  *
  * SPACES ARE PART OF THE SPAN, NOT BETWEEN THEM. `display: inline-block` on a
  * word collapses the whitespace either side of it, so the trailing space has to
@@ -52,8 +59,12 @@ export default function WordReveal({ children, as: Tag = 'h2', className = '', s
   const words = text.split(' ');
 
   return (
-    <Tag ref={ref} className={`word-reveal ${className}`} data-shown={shown ? 'true' : 'false'}>
-      <span className="sr-only">{text}</span>
+    <Tag
+      ref={ref}
+      className={`word-reveal ${className}`}
+      data-shown={shown ? 'true' : 'false'}
+      aria-label={text}
+    >
       <span aria-hidden="true">
         {words.map((w, i) => (
           <span
