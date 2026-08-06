@@ -16,7 +16,7 @@ export default function Page() {
         invisible and he simply appears to be cut off. The default 'light' tone
         is the same bg as the section that follows. */}
     <Hero hero={about.hero} tone="wash" seed={17} />
-    <Section tone="surface"><Prose {...about.story} /></Section>
+    <Section tone="surface"><Prose {...about.story} fill /></Section>
     <Section tone="wash">
       <h2 className="font-display text-xl font-bold tracking-[-0.02em] md:text-2xl">{about.credentials.heading}</h2>
       <ul className="mt-8 grid gap-4 md:grid-cols-2">

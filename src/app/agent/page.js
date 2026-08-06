@@ -51,7 +51,8 @@ export default function Page() {
       </Section>
 
       <Section tone="surface">
-        <Prose {...home.differentiator} />
+        {/* The statement writes itself in brass as you scroll — see ScrollFill. */}
+        <Prose {...home.differentiator} fill />
         <div className="mt-12 max-w-2xl">
           <Testimonial item={t('metzger')} />
         </div>

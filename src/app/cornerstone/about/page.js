@@ -11,7 +11,7 @@ export const metadata = pageMetadata('cornerstone', '/about');
 export default function Page() {
   return (<>
     <Hero hero={about.hero} tone="deep" seed={47} />
-    <Section tone="surface"><Prose {...about.story} /></Section>
+    <Section tone="surface"><Prose {...about.story} fill /></Section>
     <Section tone="wash"><Prose {...about.serviceArea} /></Section>
     <Section tone="surface">
       <div className="max-w-2xl"><Testimonial item={testimonials.find(t=>t.id===about.proofTestimonialId)} full /></div>

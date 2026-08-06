@@ -22,8 +22,11 @@
  * not already substantiated on a real page — a ticker is exactly where an
  * unverified boast slips onto a site unnoticed.
  */
+import MarqueeLean from './MarqueeLean';
+
 export default function Marquee({ items, tone = 'wash', label, duration = 46 }) {
   if (!items || items.length < 3) return null;
+  // See MarqueeLean below: the band leans with the scroll.
 
   const deep = tone === 'deep';
   const ground = deep ? 'bg-surface-deep text-white/85' : tone === 'surface' ? 'bg-surface text-ink/80' : 'bg-wash text-ink/80';
@@ -48,14 +51,16 @@ export default function Marquee({ items, tone = 'wash', label, duration = 46 }) 
       {/* data-allow-overflow declares to test-overflow.mjs that this element is
           meant to exceed the viewport. The test still checks that the parent
           actually clips it, so the exemption cannot hide a real overflow. */}
-      <div
-        data-allow-overflow
-        className="marquee-track flex w-max py-4"
-        style={{ '--marquee-duration': `${duration}s` }}
-      >
-        <Row />
-        <Row hidden />
-      </div>
+      <MarqueeLean>
+        <div
+          data-allow-overflow
+          className="marquee-track flex w-max py-4"
+          style={{ '--marquee-duration': `${duration}s` }}
+        >
+          <Row />
+          <Row hidden />
+        </div>
+      </MarqueeLean>
     </div>
   );
 }

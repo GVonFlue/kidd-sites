@@ -6,6 +6,8 @@ import Button from './Button';
 import { Eyebrow } from './Section';
 import PortalBar from './PortalBar';
 import withAccent from './Emphasis';
+import LiveParcelGrid from './LiveParcelGrid';
+import Spotlight from './Spotlight';
 
 /**
  * EYE PATH, in order:
@@ -133,7 +135,11 @@ export default function Hero({ hero, tone = 'light', seed = 7, portals = [] }) {
           can stay unclipped for the figure. */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <Parallax speed={0.1} className="absolute inset-0">
-          <ParcelGrid seed={seed} tone={deep ? 'dark' : 'light'} className="h-[125%] w-full" />
+          {/* The lots warm up under the cursor. The SVG itself is untouched and
+              still server-rendered deterministically — this only drives fill. */}
+          <LiveParcelGrid className="h-full w-full">
+            <ParcelGrid seed={seed} tone={deep ? 'dark' : 'light'} className="h-[125%] w-full" />
+          </LiveParcelGrid>
         </Parallax>
       </div>
 
@@ -218,9 +224,13 @@ export default function Hero({ hero, tone = 'light', seed = 7, portals = [] }) {
             </p>
           ) : null}
           <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <Button href={hero.primaryCta?.href} level="primary" tone={deep ? 'deep' : 'light'}>
-              {hero.primaryCta?.label}
-            </Button>
+            {/* Light catching brass. Decoration only — the highlight layer is
+                pointer-events: none, so it can never eat the click. */}
+            <Spotlight className="rounded-md">
+              <Button href={hero.primaryCta?.href} level="primary" tone={deep ? 'deep' : 'light'}>
+                {hero.primaryCta?.label}
+              </Button>
+            </Spotlight>
             <Button href={hero.secondaryCta?.href} level="secondary" tone={deep ? 'deep' : 'light'}>
               {hero.secondaryCta?.label}
             </Button>

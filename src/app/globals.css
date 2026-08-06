@@ -211,6 +211,47 @@
 .marquee:hover .marquee-track,
 .marquee:focus-within .marquee-track { animation-play-state: paused; }
 
+/* The ticker leans with the scroll: skewed and stretched a little while the
+   page is moving, settling back when it stops. It is the detail that makes the
+   band feel physical rather than looped — and it costs one transform on one
+   element, driven by a variable the scroll handler already computes. */
+.marquee-track { transition: none; }
+.marquee-lean {
+  transform-origin: center;
+  transition: transform .45s cubic-bezier(.22,.61,.36,1);
+}
+
+/* ── Spotlight ──────────────────────────────────────────────────────────────
+   A soft light that follows the cursor across a surface. The position comes in
+   as two custom properties written by Spotlight.jsx; everything else is paint.
+
+   The layer is `pointer-events: none` and sits above the surface but below the
+   content, so it can never intercept the click on the button it decorates.
+   That is not a nicety — this wraps the primary CTA. */
+.spotlight { isolation: isolate; }
+.spotlight::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: var(--spot-o, 0);
+  transition: opacity .3s ease-out;
+  background: radial-gradient(
+    var(--spot-r, 180px) circle at var(--spot-x, 50%) var(--spot-y, 50%),
+    rgba(255, 255, 255, .38),
+    rgba(255, 255, 255, 0) 62%
+  );
+}
+/* The children have to out-rank the highlight or the label sits under it and
+   the button reads as washed out at the cursor. */
+.spotlight > * { position: relative; z-index: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .spotlight::after { display: none; }
+  .marquee-lean { transition: none !important; transform: none !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .marquee-track {
     animation: none !important;

@@ -73,8 +73,20 @@ for (const width of WIDTHS) {
           // which is verified below rather than assumed.
           const declared = el.closest('[data-allow-overflow]');
           if (declared) {
-            const host = declared.parentElement;
-            if (host && getComputedStyle(host).overflowX === 'hidden') continue;
+            // WALK UP FOR THE CLIPPING ANCESTOR — do not assume it is the
+            // direct parent. It was written that way first, and the moment a
+            // presentational wrapper was inserted between the track and the
+            // clipping box every marquee page started failing again. The
+            // guarantee we actually need is "something above this clips it",
+            // not "its parent clips it".
+            let host = declared.parentElement;
+            let clipped = false;
+            while (host && host !== document.body) {
+              const ox = getComputedStyle(host).overflowX;
+              if (ox === 'hidden' || ox === 'clip') { clipped = true; break; }
+              host = host.parentElement;
+            }
+            if (clipped) continue;
           }
           if (b.width > w + 1 && (!worst || b.width > worst.w)) {
             worst = {
