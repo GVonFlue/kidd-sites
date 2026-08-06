@@ -3,6 +3,7 @@ import Footer from '@/components/shared/Footer';
 import JsonLd from '@/components/shared/JsonLd';
 import { getBrand } from '@/config';
 import { nav, headerCta, siteLinks } from '@/content/agent/nav';
+import SmoothScroll from '@/components/shared/SmoothScroll';
 
 const brand = getBrand('agent');
 const other = getBrand('cornerstone');
@@ -11,6 +12,8 @@ export default function BrandLayout({ children }) {
   return (
     <div className="flex min-h-screen flex-col font-sans">
       <JsonLd brandKey="agent" />
+      {/* Inertial scrolling, desktop + full-motion only. Renders nothing. */}
+      <SmoothScroll />
       <Header brand={brand} nav={nav} cta={headerCta} />
       {/* Everything below the floating nav lives inside the frame: inset from
           the viewport on every side, rounded, and clipped. */}

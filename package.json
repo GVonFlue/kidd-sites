@@ -26,7 +26,8 @@
     "audit:conversion": "node scripts/audit-conversion.mjs",
     "test:mason": "node scripts/test-mason-capture.mjs",
     "test:sheet": "node scripts/test-sheet-columns.mjs",
-    "test:backdrop": "node scripts/test-hero-backdrop.mjs"
+    "test:backdrop": "node scripts/test-hero-backdrop.mjs",
+    "changed": "node scripts/changed.mjs"
   },
   "author": "",
   "license": "ISC",
@@ -34,6 +35,7 @@
     "@fontsource-variable/archivo": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/ibm-plex-sans": "^5.3.0",
+    "lenis": "^1.3.26",
     "next": "^14.2.35",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

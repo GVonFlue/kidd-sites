@@ -110,6 +110,25 @@ export default function Hero({ hero, tone = 'light', seed = 7, portals = [] }) {
           />
         </div>
       ) : null}
+      {/* Plane 0.5 — an ambient brass field, drifting on a 34-second cycle.
+          It is what stops a static hero reading as a screenshot: nothing about
+          it is legible, but the page is never completely still.
+
+          Deliberately BEHIND the parcel grid and behind the type, and
+          pointer-events: none, so it can never intercept a click on the primary
+          CTA. Under reduced motion it stops dead and simply becomes a soft
+          gradient, which still looks intentional rather than broken. */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+        <div
+          className="brass-drift absolute left-[8%] top-[-30%] h-[130%] w-[70%] rounded-[50%]"
+          style={{
+            background: deep
+              ? 'radial-gradient(closest-side, rgba(217,166,72,.13), rgba(217,166,72,.04) 58%, rgba(217,166,72,0) 100%)'
+              : 'radial-gradient(closest-side, rgba(194,131,42,.16), rgba(194,131,42,.05) 58%, rgba(194,131,42,0) 100%)',
+          }}
+        />
+      </div>
+
       {/* Plane 1 — the parcel grid. Own clipping wrapper so the section itself
           can stay unclipped for the figure. */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">

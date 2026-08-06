@@ -1,5 +1,6 @@
 import { Eyebrow } from './Section';
 import Reveal from './Reveal';
+import CountUp from './CountUp';
 
 /**
  * Authority through specificity. Real numbers, set in tabular mono figures so
@@ -16,9 +17,12 @@ export default function StatStrip({ heading, stats = [], credentials = [], tone 
           <div key={s.label}>
             <dt className="sr-only">{s.label}</dt>
             <dd>
-              <span className="block font-mono text-2xl font-medium tabular-nums tracking-tight md:text-3xl">
-                {s.figure}
-              </span>
+              {/* tabular-nums is load-bearing while the figure is counting:
+                  without it every digit change reflows the row. */}
+              <CountUp
+                value={s.figure}
+                className="block font-mono text-2xl font-medium tabular-nums tracking-tight md:text-3xl"
+              />
               <span className={`mt-2 block text-sm ${tone === 'deep' ? 'text-white/70' : 'text-ink/70'}`}>
                 {s.label}
               </span>

@@ -1,3 +1,5 @@
+import WordReveal from './WordReveal';
+
 /**
  * Section wrapper. One place that owns vertical rhythm and ground colour, so
  * hierarchy stays consistent instead of being re-decided per page.
@@ -45,10 +47,18 @@ export function Eyebrow({ children, tone = 'ink' }) {
   );
 }
 
+/**
+ * Every section heading on the site goes through here, which is why the
+ * word-by-word reveal is applied HERE rather than page by page: one change and
+ * the whole site gains it, and no page can be accidentally left out.
+ *
+ * WordReveal renders the heading plainly when its child is not a plain string,
+ * so a heading carrying markup is safe and simply does not animate.
+ */
 export function H2({ children, className = '' }) {
   return (
-    <h2 className={`font-display text-[26px] font-bold leading-[1.15] tracking-[-0.02em] sm:text-[30px] lg:text-[36px] ${className}`}>
+    <WordReveal className={`font-display text-[26px] font-bold leading-[1.15] tracking-[-0.02em] sm:text-[30px] lg:text-[36px] ${className}`}>
       {children}
-    </h2>
+    </WordReveal>
   );
 }

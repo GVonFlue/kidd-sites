@@ -6,6 +6,7 @@ import ItemList from '@/components/shared/ItemList';
 import Testimonial from '@/components/shared/Testimonial';
 import LeadForm from '@/components/shared/LeadForm';
 import ClosingCta from '@/components/shared/ClosingCta';
+import StackCards from '@/components/shared/StackCards';
 import { propertyManagement as pm } from '@/content/cornerstone/pages';
 import { forms } from '@/content/shared/forms';
 import { testimonials } from '@/content/shared/testimonials';
@@ -17,7 +18,9 @@ export default function Page() {
     <Section tone="wash"><Prose {...pm.cost} /></Section>
     <Section tone="surface" id="analysis"><LeadForm form={forms.rentAnalysis} formKey="rentAnalysis" id="pm-analysis" tone="surface" /></Section>
     <Section tone="wash">
-      <ItemList {...pm.included} columns={2} />
+      {/* The deck. Six things an owner is buying, arriving one at a time
+          instead of sitting in a two-column list nobody finishes reading. */}
+      <StackCards {...pm.included} tone="wash" />
       <div className="mt-14"><Prose {...pm.placementOnly} /></div>
     </Section>
     <Section tone="deep"><Prose {...pm.subsidized} tone="deep" /></Section>

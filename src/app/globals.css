@@ -47,7 +47,17 @@
   .frame {
     margin: 0 var(--frame) var(--frame);
     border-radius: 24px;
+    /* `overflow: hidden` CREATES A SCROLL CONTAINER, and a `position: sticky`
+       descendant then sticks to THAT box — which never scrolls — so it silently
+       does nothing. Every card in the stacking deck scrolled straight past.
+       `overflow: clip` clips identically, keeps the rounded corners, and does
+       NOT create a scroll container, so sticky descendants stick to the
+       viewport as intended.
+       Both declarations are kept: a browser without `clip` support ignores the
+       second line and falls back to `hidden`, where the deck degrades to a
+       plain list rather than breaking. Order matters — do not reverse them. */
     overflow: hidden;
+    overflow: clip;
     background: var(--surface);
     box-shadow: 0 1px 2px rgba(26, 29, 31, .05), 0 12px 32px -12px rgba(26, 29, 31, .12);
   }
@@ -99,6 +109,85 @@
     color: CanvasText;
     background-image: none;
   }
+}
+
+/* ── The stacking deck ──────────────────────────────────────────────────────
+   Cards that pile up as you scroll. See StackCards.jsx for the mechanism.
+
+   `--stack-top` has to clear the floating nav, which is 44px tall plus its own
+   padding, and on a phone the compact nav bar sits below it as well. A card
+   that sticks under the nav is a card nobody can read.
+
+   The bottom gap is what gives each card room to travel before the next one
+   catches it. Too small and they arrive on top of each other instantly; too
+   large and the section costs more scroll than the content is worth. */
+.stack { --stack-top: 96px; }
+@media (min-width: 1024px) { .stack { --stack-top: 110px; } }
+
+.stack-card {
+  position: sticky;
+  margin-bottom: 10vh;
+}
+.stack-card:last-child { margin-bottom: 0; }
+
+/* NO SCROLL-DRIVEN SHRINK HERE, DELIBERATELY. The obvious enhancement is to
+   scale and dim each card as the next one covers it, via
+   `animation-timeline: view()`. It was built, measured, and removed: on a
+   `position: sticky` element the `exit` range is computed from the card's
+   PINNED position, so it barely advances — the measured result was a 1% scale
+   and a 4% opacity change across the whole deck. Code that runs and does
+   nothing visible is worse than no code, because the next person assumes the
+   effect is there and tunes the wrong thing. The clean stack IS the effect. */
+
+/* A card that pins itself to the top of the viewport IS motion, even though no
+   animation is declared here. Somebody who asked for reduced motion gets a
+   plain list. */
+@media (prefers-reduced-motion: reduce) {
+  .stack-card { position: static; margin-bottom: 20px; }
+}
+
+/* ── Word-by-word heading reveal ────────────────────────────────────────────
+   Each word of a heading lifts and lights up a beat after the one before it.
+   The stagger is set per-word as a transition-delay from the component.
+
+   SAME SAFETY RULE AS EVERY OTHER REVEAL: the hidden state is scoped to `.js`,
+   so with JavaScript off the words are simply visible. Never move the opacity
+   out of that scope. */
+.js .word-reveal [data-word] {
+  display: inline-block;
+  opacity: 0;
+  transform: translate3d(0, 0.42em, 0);
+  transition: opacity .62s cubic-bezier(.22, .61, .36, 1),
+              transform .62s cubic-bezier(.22, .61, .36, 1);
+}
+.js .word-reveal[data-shown='true'] [data-word] {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .js .word-reveal [data-word] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ── Ambient brass drift ────────────────────────────────────────────────────
+   A soft brass field wandering slowly behind the hero. Pure decoration, so it
+   is `pointer-events: none`, it sits behind everything, and it is the first
+   thing switched off under reduced motion. 34s is deliberately slower than it
+   feels it should be — anything faster reads as a background video. */
+@keyframes brass-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33%      { transform: translate3d(4%, -3%, 0) scale(1.06); }
+  66%      { transform: translate3d(-3%, 2%, 0) scale(0.97); }
+}
+.brass-drift {
+  animation: brass-drift 34s ease-in-out infinite;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .brass-drift { animation: none !important; transform: none !important; }
 }
 
 /* ── Marquee ────────────────────────────────────────────────────────────────
